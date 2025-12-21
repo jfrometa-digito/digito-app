@@ -19,6 +19,18 @@ class DocumentSelectScreen extends ConsumerStatefulWidget {
 class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize draft if none exists
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentId = ref.read(activeDraftIdProvider);
+      if (currentId == null) {
+        await ref.read(activeDraftProvider.notifier).initializeNewDraft();
+      }
+    });
+  }
+
   Future<void> _pickFile() async {
     final logger = ref.read(loggerProvider);
     logger.log('Attempting to pick file...');
@@ -80,6 +92,15 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
     final activeDraft = ref.watch(activeDraftProvider);
     final hasFile = (activeDraft?.filePath?.isNotEmpty == true) ||
         (activeDraft?.fileBytes != null);
+
+    print(
+        '[DocumentSelectScreen.build] activeDraft: ${activeDraft != null ? "exists" : "null"}');
+    if (activeDraft != null) {
+      print(
+          '[DocumentSelectScreen.build] filePath=\"${activeDraft.filePath}\", hasBytes=${activeDraft.fileBytes != null}, bytesLength=${activeDraft.fileBytes?.length}');
+    }
+    print('[DocumentSelectScreen.build] hasFile=$hasFile');
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
