@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../providers/requests_provider.dart';
+
+class ReviewScreen extends ConsumerWidget {
+  const ReviewScreen({super.key});
+
+  Future<void> _onSend(BuildContext context, WidgetRef ref) async {
+    // Simulate API call
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Mark as sent in repository
+    await ref.read(activeDraftProvider.notifier).markAsSent();
+
+    if (context.mounted) {
+      Navigator.pop(context); // Pop dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Signature Request Sent Successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Go back to Dashboard
+      context.go('/');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeDraft = ref.watch(activeDraftProvider);
+    // If no draft (shouldn't happen unless deep linked incorrectly or weird state), handle gracefully
+    if (activeDraft == null) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Review Request')),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SummaryCard(
+              title: 'Document',
+              icon: LucideIcons.fileText,
+              content: activeDraft.title,
+              subContent: activeDraft.filePath, // Or show size if we had it
+            ),
+            const SizedBox(height: 16),
+            _SummaryCard(
+              title: 'Recipients',
+              icon: LucideIcons.users,
+              content: '${activeDraft.recipients.length} Signers',
+              subContent: activeDraft.recipients
+                  .map((r) => '${r.name} (${r.email})')
+                  .join(', '),
+            ),
+            const SizedBox(height: 16),
+            const _SummaryCard(
+              title: 'Message',
+              icon: LucideIcons.messageSquare,
+              content:
+                  'Please sign this document.', // We could add a message field to the model later
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => context.pop(),
+                    style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(16)),
+                    child: const Text('Back'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _onSend(context, ref),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                    ),
+                    icon: const Icon(LucideIcons.send),
+                    label: const Text('Send Request'),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final String content;
+  final String? subContent;
+
+  const _SummaryCard({
+    required this.title,
+    required this.icon,
+    required this.content,
+    this.subContent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outline),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: colorScheme.primary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: TextStyle(
+                        color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                const SizedBox(height: 4),
+                // Handle long text
+                Text(content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: colorScheme.onSurface)),
+                if (subContent != null)
+                  Text(subContent!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: colorScheme.onSurfaceVariant, fontSize: 14)),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
