@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../../../../domain/models/signature_request.dart';
+import '../../../../core/providers/auth_provider.dart';
 import '../providers/requests_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -20,9 +21,75 @@ class DashboardScreen extends ConsumerWidget {
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(LucideIcons.userCircle),
+          Consumer(
+            builder: (context, ref, _) {
+              final isAuthAsync = ref.watch(isAuthenticatedProvider);
+
+              return isAuthAsync.when(
+                data: (isAuth) {
+                  if (isAuth) {
+                    // Authenticated: show profile menu
+                    return PopupMenuButton<String>(
+                      icon: const Icon(LucideIcons.userCircle),
+                      itemBuilder: (context) => <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'profile',
+                          child: Row(
+                            children: [
+                              Icon(LucideIcons.user, size: 20),
+                              SizedBox(width: 12),
+                              Text('Profile'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'logout',
+                          child: Row(
+                            children: [
+                              Icon(LucideIcons.logOut, size: 20),
+                              SizedBox(width: 12),
+                              Text('Log Out'),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) async {
+                        if (value == 'profile') {
+                          context.pushNamed('profile');
+                        } else if (value == 'logout') {
+                          final authService = ref.read(authServiceProvider);
+                          await authService.logout();
+                          ref.invalidate(currentUserProvider);
+                          ref.invalidate(isAuthenticatedProvider);
+                        }
+                      },
+                    );
+                  } else {
+                    // Not authenticated: navigate to login
+                    return IconButton(
+                      onPressed: () => context.pushNamed('login'),
+                      icon: const Icon(LucideIcons.userCircle),
+                    );
+                  }
+                },
+                loading: () => const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                error: (_, __) => IconButton(
+                  onPressed: () => context.pushNamed('login'),
+                  icon: const Icon(LucideIcons.userCircle),
+                ),
+              );
+            },
           ),
         ],
       ),

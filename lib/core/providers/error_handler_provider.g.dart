@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_router.dart';
+part of 'error_handler_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appRouterHash() => r'e1fc00e7a8133e8dc024414134d02c10a814c7d3';
+String _$errorHandlerHash() => r'b6f597393c0a5e3271ec525d686b12f142336822';
 
-/// See also [appRouter].
-@ProviderFor(appRouter)
-final appRouterProvider = AutoDisposeProvider<GoRouter>.internal(
-  appRouter,
-  name: r'appRouterProvider',
+/// Provider for the error handler service
+///
+/// Copied from [errorHandler].
+@ProviderFor(errorHandler)
+final errorHandlerProvider = Provider<ErrorHandlerService>.internal(
+  errorHandler,
+  name: r'errorHandlerProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$appRouterHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$errorHandlerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef AppRouterRef = AutoDisposeProviderRef<GoRouter>;
+typedef ErrorHandlerRef = ProviderRef<ErrorHandlerService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

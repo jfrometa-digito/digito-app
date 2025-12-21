@@ -6,6 +6,8 @@ import '../../features/sender/presentation/recipient_screen.dart';
 import '../../features/sender/presentation/editor_screen.dart';
 import '../../features/sender/presentation/review_screen.dart';
 import '../../features/signer/presentation/signing_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -42,6 +44,18 @@ GoRouter appRouter(AppRouterRef ref) {
             ],
           ),
         ],
+      ),
+      // Login Route
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      // Profile Route
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       // Signer Route
       GoRoute(
