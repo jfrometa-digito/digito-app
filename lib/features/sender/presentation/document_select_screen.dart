@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../../core/providers/logger_provider.dart';
 import '../providers/requests_provider.dart';
 
 class DocumentSelectScreen extends ConsumerStatefulWidget {
@@ -18,6 +20,8 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
   bool _isLoading = false;
 
   Future<void> _pickFile() async {
+    final logger = ref.read(loggerProvider);
+    logger.log('Attempting to pick file...');
     setState(() => _isLoading = true);
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -27,13 +31,26 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
 
       if (result != null) {
         final file = result.files.first;
-        // In a real app we'd save the file to app storage.
-        // For this demo, we assume the path/name is sufficient or we use bytes if web (not handled here)
-        await ref
-            .read(activeDraftProvider.notifier)
-            .updateFile(file.path ?? '', file.name);
+        logger.log('File picked: ${file.name} (Web: $kIsWeb)');
+
+        String filePath = '';
+        if (!kIsWeb) {
+          filePath = file.path ?? '';
+        }
+
+        // On web, file.path raises exception, so we intentionally keep it empty.
+        // We rely on file.bytes.
+        await ref.read(activeDraftProvider.notifier).updateFile(
+              filePath,
+              file.name,
+              fileBytes: file.bytes,
+            );
+        logger.log('File successfully passed to draft provider');
+      } else {
+        logger.log('File picking cancelled by user');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      logger.error('Error picking file', e, stack);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error picking file: $e')),
@@ -52,7 +69,8 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
 
   void _onNext() {
     final activeDraft = ref.read(activeDraftProvider);
-    if (activeDraft?.filePath?.isNotEmpty == true) {
+    if ((activeDraft?.filePath?.isNotEmpty == true) ||
+        (activeDraft?.fileBytes != null)) {
       context.pushNamed('recipients');
     }
   }
@@ -60,7 +78,8 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
   @override
   Widget build(BuildContext context) {
     final activeDraft = ref.watch(activeDraftProvider);
-    final hasFile = activeDraft?.filePath?.isNotEmpty == true;
+    final hasFile = (activeDraft?.filePath?.isNotEmpty == true) ||
+        (activeDraft?.fileBytes != null);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:json_annotation/json_annotation.dart';
 import 'placed_field.dart';
 import 'recipient.dart';
@@ -21,7 +22,11 @@ class SignatureRequest {
 
   final List<Recipient> recipients;
   final List<PlacedField> fields;
-  final String? filePath; // Path to local file for drafts
+  final String? filePath; // Path to local file (Mobile/Desktop)
+
+  // Transient field for Web support (not serialized)
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Uint8List? fileBytes;
 
   const SignatureRequest({
     required this.id,
@@ -32,6 +37,7 @@ class SignatureRequest {
     this.recipients = const [],
     this.fields = const [],
     this.filePath,
+    this.fileBytes,
   });
 
   SignatureRequest copyWith({
@@ -41,6 +47,7 @@ class SignatureRequest {
     List<Recipient>? recipients,
     List<PlacedField>? fields,
     String? filePath,
+    Uint8List? fileBytes,
   }) {
     return SignatureRequest(
       id: id,
@@ -51,6 +58,7 @@ class SignatureRequest {
       recipients: recipients ?? this.recipients,
       fields: fields ?? this.fields,
       filePath: filePath ?? this.filePath,
+      fileBytes: fileBytes ?? this.fileBytes,
     );
   }
 

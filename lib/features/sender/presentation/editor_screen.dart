@@ -57,7 +57,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
     // We assume 3 pages for the demo if not specified
     // In reality this would come from the PDF controller
-    final int pageCount = 3;
+    const int pageCount = 3;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,7 +82,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           // Document View
           Expanded(
             child: Container(
-              color: colorScheme.surfaceVariant
+              color: colorScheme.surfaceContainerHighest
                   .withOpacity(0.3), // Light gray background
               child: ListView.separated(
                 controller: _scrollController,
@@ -108,7 +108,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       color: colorScheme.surface,
-      child: Row(
+      child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _DraggableTool(

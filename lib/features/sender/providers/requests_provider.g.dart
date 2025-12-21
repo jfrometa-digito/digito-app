@@ -56,7 +56,7 @@ final activeDraftIdProvider =
 );
 
 typedef _$ActiveDraftId = AutoDisposeNotifier<String?>;
-String _$activeDraftHash() => r'9599aed366c95858d8cd7b0d17a5df9734b9307f';
+String _$activeDraftHash() => r'd2bc5a6eff82e6a4434e7ea8120ec99faf208b61';
 
 /// See also [ActiveDraft].
 @ProviderFor(ActiveDraft)

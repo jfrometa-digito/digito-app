@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
@@ -80,12 +81,14 @@ class ActiveDraft extends _$ActiveDraft {
     ref.read(activeDraftIdProvider.notifier).set(newRequest.id);
   }
 
-  Future<void> updateFile(String filePath, String fileName) async {
+  Future<void> updateFile(String filePath, String fileName,
+      {Uint8List? fileBytes}) async {
     final current = state;
     if (current == null) return;
 
     final updated = current.copyWith(
       filePath: filePath,
+      fileBytes: fileBytes,
       title: fileName, // Use filename as default title
       updatedAt: DateTime.now(),
     );

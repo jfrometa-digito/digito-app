@@ -40,7 +40,7 @@ class ReviewScreen extends ConsumerWidget {
     final activeDraft = ref.watch(activeDraftProvider);
     // If no draft (shouldn't happen unless deep linked incorrectly or weird state), handle gracefully
     if (activeDraft == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),

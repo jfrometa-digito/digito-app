@@ -24,7 +24,7 @@ dependencies:
   dotted_border: ^2.1.0
   
   # Features
-  file_picker: ^6.1.1
+  file_picker: ^10.3.8
   signature: ^5.4.0
   # Using syncfusion for robust PDF viewing (community license often avail, otherwise fallback to pdfx)
   # For this demo we'll use a simpler open alternative to avoid license confusion
