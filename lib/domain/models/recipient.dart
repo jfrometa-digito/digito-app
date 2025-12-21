@@ -7,11 +7,13 @@ class Recipient {
   final String name;
   final String email;
   final String? id; // Optional, useful for tracking status per recipient
+  final String role; // 'signer', 'reviewer', etc.
 
   const Recipient({
     required this.name,
     required this.email,
     this.id,
+    this.role = 'signer',
   });
 
   factory Recipient.fromJson(Map<String, dynamic> json) =>

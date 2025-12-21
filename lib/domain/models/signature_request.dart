@@ -12,6 +12,12 @@ enum RequestStatus {
   declined,
 }
 
+enum SignatureRequestType {
+  selfSign,
+  oneOnOne,
+  multiParty,
+}
+
 @JsonSerializable(explicitToJson: true)
 class SignatureRequest {
   final String id;
@@ -23,6 +29,8 @@ class SignatureRequest {
   final List<Recipient> recipients;
   final List<PlacedField> fields;
   final String? filePath; // Path to local file (Mobile/Desktop)
+  final String? signUrl; // Shareable link for signing
+  final SignatureRequestType type; // Type of signature flow
 
   // Transient field for Web support (not serialized)
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -38,6 +46,8 @@ class SignatureRequest {
     this.fields = const [],
     this.filePath,
     this.fileBytes,
+    this.signUrl,
+    this.type = SignatureRequestType.multiParty,
   });
 
   SignatureRequest copyWith({
@@ -48,6 +58,8 @@ class SignatureRequest {
     List<PlacedField>? fields,
     String? filePath,
     Uint8List? fileBytes,
+    String? signUrl,
+    SignatureRequestType? type,
   }) {
     return SignatureRequest(
       id: id,
@@ -59,6 +71,8 @@ class SignatureRequest {
       fields: fields ?? this.fields,
       filePath: filePath ?? this.filePath,
       fileBytes: fileBytes ?? this.fileBytes,
+      signUrl: signUrl ?? this.signUrl,
+      type: type ?? this.type,
     );
   }
 

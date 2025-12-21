@@ -14,6 +14,7 @@ AuthUser _$AuthUserFromJson(Map<String, dynamic> json) => AuthUser(
       emailVerified: json['emailVerified'] == null
           ? null
           : DateTime.parse(json['emailVerified'] as String),
+      role: json['role'] as String? ?? 'user',
     );
 
 Map<String, dynamic> _$AuthUserToJson(AuthUser instance) => <String, dynamic>{
@@ -22,4 +23,5 @@ Map<String, dynamic> _$AuthUserToJson(AuthUser instance) => <String, dynamic>{
       'name': instance.name,
       'picture': instance.picture,
       'emailVerified': instance.emailVerified?.toIso8601String(),
+      'role': instance.role,
     };

@@ -22,13 +22,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize draft if none exists
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final currentId = ref.read(activeDraftIdProvider);
-      if (currentId == null) {
-        await ref.read(activeDraftProvider.notifier).initializeNewDraft();
-      }
-    });
+    // Logic moved to Dashboard quick-actions to ensure no empty drafts are created
   }
 
   Future<void> _pickFile() async {
@@ -92,14 +86,6 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
     final activeDraft = ref.watch(activeDraftProvider);
     final hasFile = (activeDraft?.filePath?.isNotEmpty == true) ||
         (activeDraft?.fileBytes != null);
-
-    print(
-        '[DocumentSelectScreen.build] activeDraft: ${activeDraft != null ? "exists" : "null"}');
-    if (activeDraft != null) {
-      print(
-          '[DocumentSelectScreen.build] filePath=\"${activeDraft.filePath}\", hasBytes=${activeDraft.fileBytes != null}, bytesLength=${activeDraft.fileBytes?.length}');
-    }
-    print('[DocumentSelectScreen.build] hasFile=$hasFile');
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -167,7 +153,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(LucideIcons.uploadCloud,
@@ -206,7 +192,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
             border: Border.all(color: colorScheme.outline),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

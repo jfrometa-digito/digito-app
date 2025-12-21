@@ -134,6 +134,21 @@ class UserProfile {
   /// Check if user is admin
   bool get isAdmin => role == UserRole.admin;
 
+  /// Check if the user meets all prerequisites to create a certificate
+  bool get canCreateCertificate =>
+      identityValidated &&
+      adhesionContractAccepted &&
+      certificateContractAccepted;
+
+  /// Get list of missing prerequisites for certificate creation
+  List<String> get missingPrerequisites {
+    final missing = <String>[];
+    if (!identityValidated) missing.add('Validación de Identidad');
+    if (!adhesionContractAccepted) missing.add('Contrato de Adhesión');
+    if (!certificateContractAccepted) missing.add('Contrato de Certificado');
+    return missing;
+  }
+
   /// Get status color for UI
   String get statusColor {
     switch (status) {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/logger_provider.dart';
+import 'core/providers/theme_provider.dart';
 import 'core/widgets/error_boundary.dart';
 
 void main() {
@@ -35,6 +36,7 @@ class DigitoApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
 
     return GlobalErrorHandler(
       child: MaterialApp.router(
@@ -42,7 +44,7 @@ class DigitoApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: themeMode,
         routerConfig: router,
       ),
     );

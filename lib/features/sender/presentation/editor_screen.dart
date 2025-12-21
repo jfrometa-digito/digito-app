@@ -83,7 +83,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           Expanded(
             child: Container(
               color: colorScheme.surfaceContainerHighest
-                  .withOpacity(0.3), // Light gray background
+                  .withValues(alpha: 0.3), // Light gray background
               child: ListView.separated(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(24),
@@ -167,7 +167,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 color: colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -181,7 +181,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       'Page ${pageIndex + 1}',
                       style: TextStyle(
                         fontSize: 48,
-                        color: colorScheme.onSurface.withOpacity(0.1),
+                        color: colorScheme.onSurface.withValues(alpha: 0.1),
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -216,7 +216,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   // Highlight on drag hover
                   if (candidateData.isNotEmpty)
                     Container(
-                      color: colorScheme.primary.withOpacity(0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       child: Center(
                         child: Text(
                           'Drop here',
@@ -261,9 +261,9 @@ class _DraggableTool extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(0.5)),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
           ),
           child: Icon(icon, color: color),
         ),
@@ -329,7 +329,7 @@ class _PlacedFieldWidget extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         border: Border.all(color: color, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),

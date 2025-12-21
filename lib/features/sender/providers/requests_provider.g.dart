@@ -223,7 +223,7 @@ class _TransientFileProviderElement
   String get requestId => (origin as TransientFileProvider).requestId;
 }
 
-String _$activeDraftHash() => r'17b96bf008c7f7e54bd4f236e49cacee0ba935c9';
+String _$activeDraftHash() => r'1472936eacfdd6781837bda4345c5548c1eb2e9a';
 
 /// See also [ActiveDraft].
 @ProviderFor(ActiveDraft)

@@ -94,8 +94,8 @@ class _SigningScreenState extends State<SigningScreen> {
                               height: 60,
                               decoration: BoxDecoration(
                                 color: _isSigned
-                                    ? Colors.green.withOpacity(0.1)
-                                    : Colors.indigo.withOpacity(0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.indigo.withValues(alpha: 0.1),
                                 border: Border.all(
                                     color: _isSigned
                                         ? Colors.green
@@ -135,7 +135,7 @@ class _SigningScreenState extends State<SigningScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, -2))
                 ],

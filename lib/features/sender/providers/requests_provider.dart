@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
 import '../../../../domain/models/placed_field.dart';
+import '../../../../core/providers/auth_provider.dart';
 import '../data/requests_repository.dart';
 
 part 'requests_provider.g.dart';
@@ -86,49 +87,92 @@ class TransientFile extends _$TransientFile {
 class ActiveDraft extends _$ActiveDraft {
   @override
   SignatureRequest? build() {
-    final id = ref.watch(activeDraftIdProvider);
-    final requestsAsync = ref.watch(requestsProvider);
+    // We no longer purely watch the list for the draft.
+    // The state of this notifier IS the source of truth for the draft being edited.
+    // This allows us to have a "virtual" draft that isn't in the requests list yet.
+    return null;
+  }
 
-    print(
-        '[ActiveDraft.build] id=$id, requestsAsync.hasValue=${requestsAsync.hasValue}');
+  // Helper to sync draft to main requests list & repository
+  Future<void> _persist(SignatureRequest draft) async {
+    // Only persist if there's something meaningful (at least a file or a recipient)
+    final isMeaningful = draft.filePath != null ||
+        draft.fileBytes != null ||
+        draft.recipients.isNotEmpty;
 
-    if (id == null) {
-      print('[ActiveDraft.build] returning null: id is null');
-      return null;
-    }
-
-    // Use valueOrNull to keep showing data while reloading (e.g., during save)
-    final requests = requestsAsync.valueOrNull;
-    if (requests == null) {
-      print('[ActiveDraft.build] returning null: requests is null');
-      return null;
-    }
-
-    try {
-      final request = requests.firstWhere((r) => r.id == id);
-      print(
-          '[ActiveDraft.build] found request: filePath="${request.filePath}", hasBytes=${request.fileBytes != null}, bytesLength=${request.fileBytes?.length}');
-
-      // Merge transient bytes if available (mostly for Web)
-      final transientBytes = ref.watch(transientFileProvider(id));
-      print('[ActiveDraft.build] transientBytes: ${transientBytes?.length}');
-      if (transientBytes != null) {
-        final merged = request.copyWith(fileBytes: transientBytes);
-        print(
-            '[ActiveDraft.build] returning merged request with bytes: ${merged.fileBytes?.length}');
-        return merged;
-      }
-
-      print('[ActiveDraft.build] returning request as-is');
-      return request;
-    } catch (_) {
-      print('[ActiveDraft.build] returning null: request not found in list');
-      return null;
+    if (isMeaningful) {
+      await ref.read(requestsProvider.notifier).addOrUpdate(draft);
     }
   }
 
-  // --- Actions to update the draft ---
+  void set(SignatureRequest? draft) {
+    state = draft;
+  }
 
+  void loadExisting(String id) {
+    final requests = ref.read(requestsProvider).valueOrNull ?? [];
+    try {
+      final request = requests.firstWhere((r) => r.id == id);
+      // Merge transient bytes if available
+      final transientBytes = ref.read(transientFileProvider(id));
+      if (transientBytes != null) {
+        state = request.copyWith(fileBytes: transientBytes);
+      } else {
+        state = request;
+      }
+    } catch (_) {
+      state = null;
+    }
+  }
+
+  // --- Quick Action Initializers ---
+
+  Future<void> initSignMyself() async {
+    final user = ref.read(currentUserProvider).valueOrNull;
+    final newRequest = SignatureRequest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: 'Sign Myself',
+      createdAt: DateTime.now(),
+      status: RequestStatus.draft,
+      type: SignatureRequestType.selfSign,
+      recipients: user != null
+          ? [
+              Recipient(
+                id: 'me',
+                name: user.name ?? '',
+                email: user.email,
+                role: 'signer',
+              )
+            ]
+          : [],
+    );
+    state = newRequest;
+  }
+
+  Future<void> initOneOnOne() async {
+    final newRequest = SignatureRequest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: '1-on-1 Signature',
+      createdAt: DateTime.now(),
+      status: RequestStatus.draft,
+      type: SignatureRequestType.oneOnOne,
+      recipients: [], // User can choose to include themselves later
+    );
+    state = newRequest;
+  }
+
+  Future<void> initMultiParty() async {
+    final newRequest = SignatureRequest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: 'Multi-party Signature',
+      createdAt: DateTime.now(),
+      status: RequestStatus.draft,
+      type: SignatureRequestType.multiParty,
+    );
+    state = newRequest;
+  }
+
+  // Legacy initializer (used by standard flow)
   Future<void> initializeNewDraft() async {
     final newRequest = SignatureRequest(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -136,85 +180,90 @@ class ActiveDraft extends _$ActiveDraft {
       createdAt: DateTime.now(),
       status: RequestStatus.draft,
     );
-
-    // Capture notifiers before async operations
-    final requestsNotifier = ref.read(requestsProvider.notifier);
-    final draftIdNotifier = ref.read(activeDraftIdProvider.notifier);
-
-    await requestsNotifier.addOrUpdate(newRequest);
-    draftIdNotifier.set(newRequest.id);
+    state = newRequest;
   }
+
+  // --- Actions to update the draft ---
 
   Future<void> updateFile(String filePath, String fileName,
       {Uint8List? fileBytes}) async {
-    final current = state;
-    if (current == null) return;
+    var current = state;
+    if (current == null) {
+      await initializeNewDraft();
+      current = state;
+    }
+    if (current == null) return; // Should not happen after initialize
 
-    // CRITICAL: Capture these BEFORE any async operations to avoid Riverpod errors
-    final requestsNotifier = ref.read(requestsProvider.notifier);
     final transientFileNotifier =
         ref.read(transientFileProvider(current.id).notifier);
 
-    // Save bytes to transient store first
     if (fileBytes != null) {
       transientFileNotifier.set(fileBytes);
     }
 
     final updated = current.copyWith(
       filePath: filePath,
-      // fileBytes in the model is transient, so we don't strictly need to set it here
-      // for the repo save, but we do it for consistency before the save strips it.
       fileBytes: fileBytes,
-      title: fileName, // Use filename as default title
+      title: fileName.isNotEmpty ? fileName : current.title,
       updatedAt: DateTime.now(),
     );
-    await requestsNotifier.addOrUpdate(updated);
+
+    state = updated;
+    await _persist(updated);
   }
 
   Future<void> updateRecipients(List<Recipient> recipients) async {
     final current = state;
     if (current == null) return;
 
-    final requestsNotifier = ref.read(requestsProvider.notifier);
     final updated = current.copyWith(
       recipients: recipients,
       updatedAt: DateTime.now(),
     );
-    await requestsNotifier.addOrUpdate(updated);
+
+    state = updated;
+    await _persist(updated);
   }
 
   Future<void> updateFields(List<PlacedField> fields) async {
     final current = state;
     if (current == null) return;
 
-    final requestsNotifier = ref.read(requestsProvider.notifier);
     final updated = current.copyWith(
       fields: fields,
       updatedAt: DateTime.now(),
     );
-    await requestsNotifier.addOrUpdate(updated);
+
+    state = updated;
+    await _persist(updated);
   }
 
   Future<void> markAsSent() async {
     final current = state;
     if (current == null) return;
 
-    // Capture notifiers before async operations
     final requestsNotifier = ref.read(requestsProvider.notifier);
     final transientFileNotifier =
         ref.read(transientFileProvider(current.id).notifier);
-    final draftIdNotifier = ref.read(activeDraftIdProvider.notifier);
+
+    // Generate shareable link (mock)
+    final signUrl = 'https://digito.app/sign/${current.id}';
 
     final updated = current.copyWith(
       status: RequestStatus.sent,
+      signUrl: signUrl,
       updatedAt: DateTime.now(),
     );
+
     await requestsNotifier.addOrUpdate(updated);
 
-    // Cleanup transient bytes
+    // Cleanup transient bytes but keep the draft in memory for the success screen
+    // We update the state with the 'sent' version instead of clearing it immediately
+    state = updated;
     transientFileNotifier.set(null);
+  }
 
-    // Clear active draft after sending
-    draftIdNotifier.set(null);
+  void clear() {
+    state = null;
   }
 }

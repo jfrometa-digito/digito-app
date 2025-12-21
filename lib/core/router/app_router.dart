@@ -8,6 +8,8 @@ import '../../features/sender/presentation/review_screen.dart';
 import '../../features/signer/presentation/signing_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/sender/presentation/widgets/share_link_view.dart';
+import '../../features/sender/providers/requests_provider.dart';
 
 part 'app_router.g.dart';
 
@@ -63,6 +65,21 @@ GoRouter appRouter(AppRouterRef ref) {
         builder: (context, state) {
           final requestId = state.pathParameters['requestId']!;
           return SigningScreen(requestId: requestId);
+        },
+      ),
+      // Share Link Route
+      GoRoute(
+        path: '/share/:requestId',
+        name: 'share',
+        builder: (context, state) {
+          final requestId = state.pathParameters['requestId']!;
+          final requests = ref.watch(requestsProvider).valueOrNull ?? [];
+          final request = requests.firstWhere((r) => r.id == requestId);
+          return ShareLinkView(
+            request: request,
+            onAction: () => context.go('/'),
+            actionLabel: 'Back to Dashboard',
+          );
         },
       ),
     ],

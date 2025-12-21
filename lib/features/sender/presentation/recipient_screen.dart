@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
+import '../../../../core/providers/auth_provider.dart';
 import '../providers/requests_provider.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
@@ -76,6 +78,18 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     _syncToDraft();
   }
 
+  void _addMeAsRecipient() {
+    final user = ref.read(currentUserProvider).valueOrNull;
+    if (user != null) {
+      _addRecipientRow(Recipient(
+        id: 'me',
+        name: user.name ?? '',
+        email: user.email,
+        role: 'signer',
+      ));
+    }
+  }
+
   void _syncToDraft() {
     final recipients = <Recipient>[];
     for (int i = 0; i < _nameControllers.length; i++) {
@@ -89,6 +103,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   void _onNext() {
+    final activeDraft = ref.read(activeDraftProvider);
+    if (activeDraft == null) return;
+
     // Validate
     bool isValid = true;
     for (int i = 0; i < _nameControllers.length; i++) {
@@ -99,23 +116,41 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       }
     }
 
-    if (isValid) {
-      context.pushNamed('editor');
-    } else {
+    if (!isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all recipient fields')),
       );
+      return;
     }
+
+    // Flow-specific validation
+    if (activeDraft.type == SignatureRequestType.oneOnOne &&
+        _nameControllers.length != 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('1-on-1 requires exactly 2 signers.')),
+      );
+      return;
+    }
+
+    context.pushNamed('editor');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch active draft to potentially rebuild if externally changed (optional, but good practice)
-    ref.watch(activeDraftProvider);
+    final activeDraft = ref.watch(activeDraftProvider);
+    if (activeDraft == null) return const SizedBox();
+
+    final title = _getFlowTitle(activeDraft.type);
+    final isSelfSign = activeDraft.type == SignatureRequestType.selfSign;
+    final isOneOnOne = activeDraft.type == SignatureRequestType.oneOnOne;
+    final canAddMore =
+        !isSelfSign && (!isOneOnOne || _nameControllers.length < 2);
+    final hasMe = _nameControllers.any((c) =>
+        c.text == (ref.read(currentUserProvider).valueOrNull?.name ?? ''));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Recipients'),
+        title: Text(title),
         leading: IconButton(
           icon: const Icon(LucideIcons.chevronLeft),
           onPressed: () => context.pop(),
@@ -129,7 +164,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
               itemCount: _nameControllers.length,
               separatorBuilder: (ctx, i) => const SizedBox(height: 24),
               itemBuilder: (context, index) {
-                return _buildRecipientRow(index);
+                return _buildRecipientRow(index, activeDraft.type);
               },
             ),
           ),
@@ -138,14 +173,24 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                OutlinedButton.icon(
-                  onPressed: () => _addRecipientRow(),
-                  icon: const Icon(LucideIcons.plus),
-                  label: const Text('Add Another Recipient'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
+                if (!hasMe && activeDraft.type != SignatureRequestType.selfSign)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: OutlinedButton.icon(
+                      onPressed: _addMeAsRecipient,
+                      icon: const Icon(LucideIcons.userPlus),
+                      label: const Text('Include myself as signer'),
+                    ),
                   ),
-                ),
+                if (canAddMore)
+                  OutlinedButton.icon(
+                    onPressed: () => _addRecipientRow(),
+                    icon: const Icon(LucideIcons.plus),
+                    label: const Text('Add Another Recipient'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _onNext,
@@ -159,8 +204,22 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     );
   }
 
-  Widget _buildRecipientRow(int index) {
+  String _getFlowTitle(SignatureRequestType type) {
+    switch (type) {
+      case SignatureRequestType.selfSign:
+        return 'Sign Myself';
+      case SignatureRequestType.oneOnOne:
+        return '1-on-1 Signature';
+      case SignatureRequestType.multiParty:
+        return 'Add Recipients';
+    }
+  }
+
+  Widget _buildRecipientRow(int index, SignatureRequestType type) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isSelfSign = type == SignatureRequestType.selfSign;
+    final canDelete = !isSelfSign && _nameControllers.length > 1;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -175,11 +234,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Recipient ${index + 1}',
+                isSelfSign ? 'Your Information' : 'Recipient ${index + 1}',
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: colorScheme.onSurface),
               ),
-              if (_nameControllers.length > 1)
+              if (canDelete)
                 IconButton(
                   icon: Icon(LucideIcons.trash2,
                       size: 20, color: colorScheme.error),

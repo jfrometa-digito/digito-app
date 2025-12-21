@@ -2,12 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../../domain/models/signature_request.dart';
 import '../providers/requests_provider.dart';
+import 'widgets/share_link_view.dart';
 
-class ReviewScreen extends ConsumerWidget {
+class ReviewScreen extends ConsumerStatefulWidget {
   const ReviewScreen({super.key});
 
-  Future<void> _onSend(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
+}
+
+class _ReviewScreenState extends ConsumerState<ReviewScreen> {
+  bool _isSent = false;
+  SignatureRequest? _sentRequest;
+
+  Future<void> _onSend() async {
     // Simulate API call
     showDialog(
       context: context,
@@ -20,30 +30,36 @@ class ReviewScreen extends ConsumerWidget {
     // Mark as sent in repository
     await ref.read(activeDraftProvider.notifier).markAsSent();
 
-    if (context.mounted) {
-      Navigator.pop(context); // Pop dialog
+    final sentDraft = ref.read(activeDraftProvider);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Signature Request Sent Successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Go back to Dashboard
-      context.go('/');
+    if (mounted) {
+      Navigator.pop(context); // Pop loading dialog
+      setState(() {
+        _isSent = true;
+        _sentRequest = sentDraft;
+      });
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final activeDraft = ref.watch(activeDraftProvider);
     // If no draft (shouldn't happen unless deep linked incorrectly or weird state), handle gracefully
-    if (activeDraft == null) {
+    if (activeDraft == null && !_isSent) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+    if (_isSent && _sentRequest != null) {
+      return ShareLinkView(
+        request: _sentRequest!,
+        onAction: () {
+          ref.read(activeDraftProvider.notifier).clear();
+          context.go('/');
+        },
       );
     }
 
@@ -57,7 +73,7 @@ class ReviewScreen extends ConsumerWidget {
             _SummaryCard(
               title: 'Document',
               icon: LucideIcons.fileText,
-              content: activeDraft.title,
+              content: activeDraft!.title,
               subContent: activeDraft.filePath, // Or show size if we had it
             ),
             const SizedBox(height: 16),
@@ -91,7 +107,7 @@ class ReviewScreen extends ConsumerWidget {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: () => _onSend(context, ref),
+                    onPressed: _onSend,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                     ),
@@ -136,7 +152,7 @@ class _SummaryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: colorScheme.primary),
