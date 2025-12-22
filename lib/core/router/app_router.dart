@@ -5,6 +5,7 @@ import '../../features/sender/presentation/document_select_screen.dart';
 import '../../features/sender/presentation/recipient_screen.dart';
 import '../../features/sender/presentation/editor_screen.dart';
 import '../../features/sender/presentation/review_screen.dart';
+import '../../features/sender/presentation/history_screen.dart';
 import '../../features/signer/presentation/signing_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -44,6 +45,11 @@ GoRouter appRouter(AppRouterRef ref) {
                 builder: (context, state) => const ReviewScreen(),
               ),
             ],
+          ),
+          GoRoute(
+            path: 'history',
+            name: 'history',
+            builder: (context, state) => const HistoryScreen(),
           ),
         ],
       ),

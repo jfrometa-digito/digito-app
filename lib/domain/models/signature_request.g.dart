@@ -24,6 +24,9 @@ SignatureRequest _$SignatureRequestFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       filePath: json['filePath'] as String?,
+      signUrl: json['signUrl'] as String?,
+      type: $enumDecodeNullable(_$SignatureRequestTypeEnumMap, json['type']) ??
+          SignatureRequestType.multiParty,
     );
 
 Map<String, dynamic> _$SignatureRequestToJson(SignatureRequest instance) =>
@@ -36,6 +39,8 @@ Map<String, dynamic> _$SignatureRequestToJson(SignatureRequest instance) =>
       'recipients': instance.recipients.map((e) => e.toJson()).toList(),
       'fields': instance.fields.map((e) => e.toJson()).toList(),
       'filePath': instance.filePath,
+      'signUrl': instance.signUrl,
+      'type': _$SignatureRequestTypeEnumMap[instance.type]!,
     };
 
 const _$RequestStatusEnumMap = {
@@ -43,4 +48,10 @@ const _$RequestStatusEnumMap = {
   RequestStatus.sent: 'sent',
   RequestStatus.completed: 'completed',
   RequestStatus.declined: 'declined',
+};
+
+const _$SignatureRequestTypeEnumMap = {
+  SignatureRequestType.selfSign: 'selfSign',
+  SignatureRequestType.oneOnOne: 'oneOnOne',
+  SignatureRequestType.multiParty: 'multiParty',
 };

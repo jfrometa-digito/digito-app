@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../domain/models/placed_field.dart';
+import '../../../../domain/models/signature_request.dart';
 import '../providers/requests_provider.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
@@ -13,8 +16,6 @@ class EditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorScreenState extends ConsumerState<EditorScreen> {
-  final _scrollController = ScrollController();
-
   void _onFieldDropped(FieldType type, Offset position, int pageNumber) {
     // We need to generate a unique ID.
     // In a real app we might verify if position is within bounds relative to PDF page size.
@@ -52,12 +53,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   @override
   Widget build(BuildContext context) {
     final activeDraft = ref.watch(activeDraftProvider);
-    final fields = activeDraft?.fields ?? [];
-    final colorScheme = Theme.of(context).colorScheme;
+    if (activeDraft == null)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // We assume 3 pages for the demo if not specified
-    // In reality this would come from the PDF controller
-    const int pageCount = 3;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,24 +81,98 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           // Document View
           Expanded(
             child: Container(
-              color: colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.3), // Light gray background
-              child: ListView.separated(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(24),
-                itemCount: pageCount,
-                separatorBuilder: (ctx, i) => const SizedBox(height: 24),
-                itemBuilder: (context, index) {
-                  // Filter fields for this page
-                  final pageFields =
-                      fields.where((f) => f.pageNumber == index).toList();
-                  return _buildDocumentPage(index, pageFields);
-                },
-              ),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              child: activeDraft.filePath?.isNotEmpty == true ||
+                      activeDraft.fileBytes != null
+                  ? _buildPdfPreview(activeDraft)
+                  : const Center(child: Text('No document content available')),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPdfPreview(SignatureRequest request) {
+    return Stack(
+      children: [
+        if (!kIsWeb && request.filePath != null)
+          PDFView(
+            filePath: request.filePath,
+            enableSwipe: true,
+            swipeHorizontal: false,
+            autoSpacing: true,
+            pageSnap: true,
+          )
+        else
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(LucideIcons.fileText,
+                    size: 64,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.5)),
+                const SizedBox(height: 16),
+                const Text('PDF Content Loaded'),
+                const Text('Field placement active',
+                    style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+
+        // Overlay for fields
+        _buildFieldOverlay(request),
+      ],
+    );
+  }
+
+  Widget _buildFieldOverlay(SignatureRequest request) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return DragTarget<FieldType>(
+          onAcceptWithDetails: (details) {
+            final RenderBox renderBox = context.findRenderObject() as RenderBox;
+            final localPosition = renderBox.globalToLocal(details.offset);
+            _onFieldDropped(
+                details.data, localPosition, 0); // Default to current page
+          },
+          builder: (context, candidateData, rejectedData) {
+            return Stack(
+              children: [
+                ...request.fields.map((field) => Positioned(
+                      left: field.position.dx,
+                      top: field.position.dy,
+                      child: GestureDetector(
+                        onLongPress: () => _deleteField(field.id),
+                        child: Draggable<String>(
+                          data: field.id,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: _PlacedFieldWidget(field: field),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: _PlacedFieldWidget(field: field),
+                          ),
+                          onDragEnd: (details) {
+                            final RenderBox renderBox =
+                                context.findRenderObject() as RenderBox;
+                            final localPosition =
+                                renderBox.globalToLocal(details.offset);
+                            _updateFieldPosition(field.id, localPosition);
+                          },
+                          child: _PlacedFieldWidget(field: field),
+                        ),
+                      ),
+                    )),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -137,103 +210,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDocumentPage(int pageIndex, List<PlacedField> fields) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // Aspect ratio of A4 usually, assuming width matches viewport minus padding
-    // For drag targets to work, we need a known size or LayoutBuilder.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = width * 1.414; // A4 Aspect Ratio
-
-        return DragTarget<FieldType>(
-          onAcceptWithDetails: (details) {
-            // Convert global position to local position
-            final RenderBox renderBox = context.findRenderObject() as RenderBox;
-            final localPosition = renderBox.globalToLocal(details.offset);
-
-            // Should probably center the field on the drop location
-            // But for now, just use the raw local position
-            _onFieldDropped(details.data, localPosition, pageIndex);
-          },
-          builder: (context, candidateData, rejectedData) {
-            return Container(
-              width: width,
-              height: height,
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  // Placeholder for PDF content
-                  Center(
-                    child: Text(
-                      'Page ${pageIndex + 1}',
-                      style: TextStyle(
-                        fontSize: 48,
-                        color: colorScheme.onSurface.withValues(alpha: 0.1),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  // Render placed fields
-                  ...fields.map((field) => Positioned(
-                        left: field.position.dx,
-                        top: field.position.dy,
-                        child: GestureDetector(
-                          onLongPress: () => _deleteField(field.id),
-                          child: Draggable<String>(
-                            data: field.id, // Dragging existing field
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: _PlacedFieldWidget(field: field),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: _PlacedFieldWidget(field: field),
-                            ),
-                            onDragEnd: (details) {
-                              final RenderBox renderBox =
-                                  context.findRenderObject() as RenderBox;
-                              final localPosition =
-                                  renderBox.globalToLocal(details.offset);
-                              _updateFieldPosition(field.id, localPosition);
-                            },
-                            child: _PlacedFieldWidget(field: field),
-                          ),
-                        ),
-                      )),
-                  // Highlight on drag hover
-                  if (candidateData.isNotEmpty)
-                    Container(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      child: Center(
-                        child: Text(
-                          'Drop here',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

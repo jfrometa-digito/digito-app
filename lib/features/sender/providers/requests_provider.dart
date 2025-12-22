@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
@@ -83,7 +86,7 @@ class TransientFile extends _$TransientFile {
 }
 
 // Provider to access/modify the active draft
-@riverpod
+@Riverpod(keepAlive: true)
 class ActiveDraft extends _$ActiveDraft {
   @override
   SignatureRequest? build() {
@@ -109,10 +112,25 @@ class ActiveDraft extends _$ActiveDraft {
     state = draft;
   }
 
+  void loadFromObject(SignatureRequest request) {
+    final id = request.id;
+
+    // Merge transient bytes if available
+    final transientBytes = ref.read(transientFileProvider(id));
+    if (transientBytes != null) {
+      state = request.copyWith(fileBytes: transientBytes);
+    } else {
+      state = request;
+    }
+  }
+
   void loadExisting(String id) {
-    final requests = ref.read(requestsProvider).valueOrNull ?? [];
+    final requestsValue = ref.read(requestsProvider);
+    final requests = requestsValue.valueOrNull ?? [];
+
     try {
       final request = requests.firstWhere((r) => r.id == id);
+
       // Merge transient bytes if available
       final transientBytes = ref.read(transientFileProvider(id));
       if (transientBytes != null) {
@@ -120,7 +138,8 @@ class ActiveDraft extends _$ActiveDraft {
       } else {
         state = request;
       }
-    } catch (_) {
+    } catch (e) {
+      print('DEBUG: ActiveDraft.loadExisting - FAILURE - ID: $id - Error: $e');
       state = null;
     }
   }
@@ -192,7 +211,26 @@ class ActiveDraft extends _$ActiveDraft {
       await initializeNewDraft();
       current = state;
     }
-    if (current == null) return; // Should not happen after initialize
+    if (current == null) return;
+
+    String finalPath = filePath;
+
+    // On native platforms, copy the temporary file to a permanent location
+    if (filePath.isNotEmpty && !kIsWeb) {
+      try {
+        final appDir = await getApplicationDocumentsDirectory();
+        final fileNameOnly = filePath.split('/').last;
+        final persistentPath = '${appDir.path}/$fileNameOnly';
+        final file = File(filePath);
+        if (await file.exists()) {
+          await file.copy(persistentPath);
+          finalPath = persistentPath;
+          print('DEBUG: updateFile - Copied to persistent path: $finalPath');
+        }
+      } catch (e) {
+        print('DEBUG: updateFile - Error persisting file: $e');
+      }
+    }
 
     final transientFileNotifier =
         ref.read(transientFileProvider(current.id).notifier);
@@ -202,7 +240,7 @@ class ActiveDraft extends _$ActiveDraft {
     }
 
     final updated = current.copyWith(
-      filePath: filePath,
+      filePath: finalPath,
       fileBytes: fileBytes,
       title: fileName.isNotEmpty ? fileName : current.title,
       updatedAt: DateTime.now(),

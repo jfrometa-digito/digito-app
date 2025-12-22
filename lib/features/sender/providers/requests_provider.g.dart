@@ -223,12 +223,12 @@ class _TransientFileProviderElement
   String get requestId => (origin as TransientFileProvider).requestId;
 }
 
-String _$activeDraftHash() => r'1472936eacfdd6781837bda4345c5548c1eb2e9a';
+String _$activeDraftHash() => r'9585b0e9ef777f4b8fc83ce12404d9bbf7b8e739';
 
 /// See also [ActiveDraft].
 @ProviderFor(ActiveDraft)
 final activeDraftProvider =
-    AutoDisposeNotifierProvider<ActiveDraft, SignatureRequest?>.internal(
+    NotifierProvider<ActiveDraft, SignatureRequest?>.internal(
   ActiveDraft.new,
   name: r'activeDraftProvider',
   debugGetCreateSourceHash:
@@ -237,6 +237,6 @@ final activeDraftProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$ActiveDraft = AutoDisposeNotifier<SignatureRequest?>;
+typedef _$ActiveDraft = Notifier<SignatureRequest?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

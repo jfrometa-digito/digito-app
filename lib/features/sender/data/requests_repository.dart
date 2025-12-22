@@ -12,12 +12,16 @@ class RequestsRepository {
 
     try {
       final List<dynamic> jsonList = jsonDecode(jsonString);
-      return jsonList
-          .map(
-              (json) => SignatureRequest.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final List<SignatureRequest> requests = [];
+      for (final json in jsonList) {
+        try {
+          requests.add(SignatureRequest.fromJson(json as Map<String, dynamic>));
+        } catch (e) {
+          // Continue to next one instead of failing entire list
+        }
+      }
+      return requests;
     } catch (e) {
-      // In case of migration or corruption error, return empty for now
       return [];
     }
   }

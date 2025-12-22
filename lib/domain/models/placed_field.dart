@@ -40,7 +40,7 @@ class PlacedField {
   Map<String, dynamic> toJson() => _$PlacedFieldToJson(this);
 
   static Offset _offsetFromJson(Map<String, dynamic> json) =>
-      Offset(json['dx'] as double, json['dy'] as double);
+      Offset((json['dx'] as num).toDouble(), (json['dy'] as num).toDouble());
 
   static Map<String, dynamic> _offsetToJson(Offset offset) =>
       {'dx': offset.dx, 'dy': offset.dy};

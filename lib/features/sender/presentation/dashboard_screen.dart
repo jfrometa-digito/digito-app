@@ -52,7 +52,7 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () => context.pushNamed('history'),
                           child: const Text('View All'),
                         ),
                       ],
@@ -100,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
 
   void _resumeDraft(BuildContext context, WidgetRef ref, SignatureRequest req) {
     if (req.status == RequestStatus.draft) {
-      ref.read(activeDraftProvider.notifier).loadExisting(req.id);
+      ref.read(activeDraftProvider.notifier).loadFromObject(req);
       if (req.fields.isNotEmpty) {
         context.pushNamed('editor');
       } else if (req.recipients.isNotEmpty) {
@@ -472,6 +472,34 @@ class _RequestCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (request.status == RequestStatus.draft)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'CONTINUE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(LucideIcons.arrowRight,
+                            size: 12, color: colorScheme.primary),
+                      ],
+                    ),
+                  ),
+                ),
               Icon(LucideIcons.chevronRight,
                   color: colorScheme.outline, size: 20),
             ],
