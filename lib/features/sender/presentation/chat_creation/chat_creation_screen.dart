@@ -12,9 +12,24 @@ import 'package:genui/genui.dart';
 // Platform-specific imports
 import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:genui_firebase_ai/genui_firebase_ai.dart';
+import 'package:digito_app/core/providers/logger_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ChatCreationScreen extends ConsumerStatefulWidget {
   const ChatCreationScreen({super.key});
+
+  static const String systemInstruction =
+      'You are a helpful assistant for creating document signature requests. '
+      'Your workflow must follow these steps strictly:\n'
+      '1. Start by asking the user which flow they want to use: Self-Sign, One-on-One, or Multi-Party. Use the "flowSelector" component for this. '
+      'When the user selects a flow, use the "setRequestType" tool to update the draft.\n'
+      '2. Once a flow is selected, ask the user to upload the document. Use the "fileUploader" component for this.\n'
+      '3. After the file is uploaded, prompt the user to clarify who is signing:\n'
+      '   - If "Self-Sign": Confirm they are the signer.\n'
+      '   - If "One-on-One" or "Multi-Party": Ask if they (the sender) are also signing. If yes, add them as the first recipient using the "addRecipient" tool.\n'
+      '4. Then ask for any other details like additional recipients if needed (for One-on-One/Multi-Party). Use "addRecipient" tool for each one.\n'
+      '5. Finally, show a summary using "draftSummary" and ask to review.\n\n'
+      'Always prefer showing the components (`flowSelector`, `fileUploader`, `recipientList`, `draftSummary`) over asking text-based questions for these tasks.';
 
   @override
   ConsumerState<ChatCreationScreen> createState() => _ChatCreationScreenState();
@@ -34,11 +49,8 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
   }
 
   void _initializeConversation() {
-    // TODO: Securely provide API Key
-    // To use a specific key, run with: --dart-define=GEMINI_API_KEY=your_key
-    // And ensure your key allows requests from http://localhost:3000 (if running on port 3000)
-    const apiKey = String.fromEnvironment('GEMINI_API_KEY',
-        defaultValue: 'AIzaSyBKEXoBQ2Gwm9Ktx2gA_OriL7p1aeLyf9s');
+    final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    final logger = ref.read(loggerProvider);
 
     final catalog = createSenderCatalog(
       onMessageSent: (message) {
@@ -80,37 +92,20 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       // Web: Use Firebase AI to avoid CORS issues
       generator = FirebaseAiContentGenerator(
         catalog: catalog,
-        systemInstruction:
-            'You are a helpful assistant for creating document signature requests. '
-            'Your workflow must follow these steps strictly:\n'
-            '1. Start by asking the user which flow they want to use: Self-Sign, One-on-One, or Multi-Party. Use the "flowSelector" component for this. '
-            'When the user selects a flow, use the "setRequestType" tool to update the draft.\n'
-            '2. Once a flow is selected, ask the user to upload the document. Use the "fileUploader" component for this.\n'
-            '3. After the file is uploaded, prompt the user to clarify who is signing:\n'
-            '   - If "Self-Sign": Confirm they are the signer.\n'
-            '   - If "One-on-One" or "Multi-Party": Ask if they (the sender) are also signing. If yes, add them as the first recipient using the "addRecipient" tool.\n'
-            '4. Then ask for any other details like additional recipients if needed (for One-on-One/Multi-Party). Use "addRecipient" tool for each one.\n'
-            '5. Finally, show a summary using "draftSummary" and ask to review.\n\n'
-            'Always prefer showing the components (`flowSelector`, `fileUploader`, `recipientList`, `draftSummary`) over asking text-based questions for these tasks.',
+        systemInstruction: ChatCreationScreen.systemInstruction,
         additionalTools: tools,
       );
     } else {
       // Mobile (iOS/Android): Use Google Generative AI directly (no CORS issues)
+      if (apiKey.isEmpty) {
+        logger.error(
+            'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key');
+      }
+
       generator = GoogleGenerativeAiContentGenerator(
         apiKey: apiKey,
         modelName: 'gemini-1.5-flash',
-        systemInstruction:
-            'You are a helpful assistant for creating document signature requests. '
-            'Your workflow must follow these steps strictly:\n'
-            '1. Start by asking the user which flow they want to use: Self-Sign, One-on-One, or Multi-Party. Use the "flowSelector" component for this. '
-            'When the user selects a flow, use the "setRequestType" tool to update the draft.\n'
-            '2. Once a flow is selected, ask the user to upload the document. Use the "fileUploader" component for this.\n'
-            '3. After the file is uploaded, prompt the user to clarify who is signing:\n'
-            '   - If "Self-Sign": Confirm they are the signer.\n'
-            '   - If "One-on-One" or "Multi-Party": Ask if they (the sender) are also signing. If yes, add them as the first recipient using the "addRecipient" tool.\n'
-            '4. Then ask for any other details like additional recipients if needed (for One-on-One/Multi-Party). Use "addRecipient" tool for each one.\n'
-            '5. Finally, show a summary using "draftSummary" and ask to review.\n\n'
-            'Always prefer showing the components (`flowSelector`, `fileUploader`, `recipientList`, `draftSummary`) over asking text-based questions for these tasks.',
+        systemInstruction: ChatCreationScreen.systemInstruction,
         catalog: catalog,
         additionalTools: tools,
       );
@@ -135,22 +130,19 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         _scrollToBottom();
       },
       onError: (error) {
-        debugPrint('GenUI conversation error: $error');
+        logger.error('GenUI conversation error', error);
         String errorMessage = 'An error occurred. Please try again.';
-
-        // Type check might fail if different package versions are mixed or if error is wrapped.
-        // Simplified for stability:
-        if (error.runtimeType.toString() == 'GenerativeAIException') {
-          errorMessage = error.toString();
-        }
 
         if (error.toString().contains('XmlHttpRequest error')) {
           errorMessage =
               'Connection failed. Check your API Key permissions and CORS settings.';
         } else if (error.toString().contains('ContentGeneratorError')) {
-          // This often means the model refused to answer or returned an invalid response
           errorMessage =
               'The AI model encountered an error generating content. Check API key quota or safety settings.';
+        } else if (apiKey.isEmpty && !kIsWeb) {
+          errorMessage = 'API Key is missing. Please configure GEMINI_API_KEY.';
+        } else {
+          errorMessage = error.toString();
         }
 
         ScaffoldMessenger.of(context).showSnackBar(

@@ -8,9 +8,13 @@ import 'core/router/app_router.dart';
 import 'core/providers/logger_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/widgets/error_boundary.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   // Initialize Firebase for web platform (required for Firebase AI)
   if (kIsWeb) {

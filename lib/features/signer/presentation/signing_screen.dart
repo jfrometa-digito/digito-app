@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart' as genui;
 import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
+import 'package:genui_firebase_ai/genui_firebase_ai.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:digito_app/core/providers/logger_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'signing_catalog.dart';
 
-class SigningScreen extends StatefulWidget {
+class SigningScreen extends ConsumerStatefulWidget {
   const SigningScreen({super.key, required String requestId});
 
   @override
-  State<SigningScreen> createState() => _SigningScreenState();
+  ConsumerState<SigningScreen> createState() => _SigningScreenState();
 }
 
-class _SigningScreenState extends State<SigningScreen> {
+class _SigningScreenState extends ConsumerState<SigningScreen> {
   late final genui.GenUiConversation _conversation;
   final List<ChatBubbleModel> _bubbles = [];
   final TextEditingController _textController = TextEditingController();
@@ -25,19 +30,35 @@ class _SigningScreenState extends State<SigningScreen> {
   }
 
   void _initializeConversation() {
-    final generator = GoogleGenerativeAiContentGenerator(
-      apiKey: 'YOUR_API_KEY',
-      systemInstruction:
-          'You are a helpful Legal Signing Assistant for Digito. '
-          'Guide the user through signing their documents. '
-          'Use the catalog items to display document info and signature pads.',
-      catalog: signingCatalog,
-    );
+    final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    final logger = ref.read(loggerProvider);
 
-    // GenUiConversation in recent versions takes a2uiMessageProcessor.
-    // If the lint says catalog/catalogs is required, it might be an older or different version.
-    // But based on our research, it takes a2uiMessageProcessor.
-    // Let's adjust based on the lint feedback which said 'catalog' is required for the GenUiConversation constructor.
+    const systemInstruction =
+        'You are a helpful Legal Signing Assistant for Digito. '
+        'Guide the user through signing their documents. '
+        'Use the catalog items to display document info and signature pads.';
+
+    final genui.ContentGenerator generator;
+
+    if (kIsWeb) {
+      generator = FirebaseAiContentGenerator(
+        catalog: signingCatalog,
+        systemInstruction: systemInstruction,
+      );
+    } else {
+      if (apiKey.isEmpty) {
+        logger.error(
+            'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key');
+      }
+
+      generator = GoogleGenerativeAiContentGenerator(
+        apiKey: apiKey,
+        modelName: 'gemini-1.5-flash',
+        systemInstruction: systemInstruction,
+        catalog: signingCatalog,
+      );
+    }
+
     _conversation = genui.GenUiConversation(
       contentGenerator: generator,
       a2uiMessageProcessor:
@@ -61,6 +82,7 @@ class _SigningScreenState extends State<SigningScreen> {
         _scrollToBottom();
       },
       onError: (error) {
+        logger.error('GenUI signing conversation error', error);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $error')),
         );

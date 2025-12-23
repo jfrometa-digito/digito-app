@@ -47,6 +47,7 @@ dependencies:
   # For web - Firebase handles CORS properly
   genui_firebase_ai: ^0.6.0
   firebase_core: ^4.3.0
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -58,3 +59,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env
