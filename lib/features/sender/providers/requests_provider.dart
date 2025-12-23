@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
 import '../../../../domain/models/placed_field.dart';
@@ -33,7 +32,7 @@ class Requests extends _$Requests {
     await repo.saveRequest(request);
 
     // Optimistic update to avoid loading gap which breaks ActiveDraft
-    final currentList = state.valueOrNull ?? [];
+    final currentList = state.value ?? [];
     final index = currentList.indexWhere((r) => r.id == request.id);
 
     if (index != -1) {
@@ -49,7 +48,7 @@ class Requests extends _$Requests {
     final repo = ref.read(requestsRepositoryProvider);
     await repo.deleteRequest(id);
 
-    final currentList = state.valueOrNull ?? [];
+    final currentList = state.value ?? [];
     final updatedList = currentList.where((r) => r.id != id).toList();
     state = AsyncData(updatedList);
   }
@@ -101,7 +100,8 @@ class ActiveDraft extends _$ActiveDraft {
   // Helper to sync draft to main requests list & repository
   Future<void> _persist(SignatureRequest draft) async {
     // Only persist if there's something meaningful (at least a file or a recipient)
-    final isMeaningful = draft.filePath != null ||
+    final isMeaningful =
+        draft.filePath != null ||
         draft.fileBytes != null ||
         draft.recipients.isNotEmpty;
 
@@ -128,7 +128,7 @@ class ActiveDraft extends _$ActiveDraft {
 
   void loadExisting(String id) {
     final requestsValue = ref.read(requestsProvider);
-    final requests = requestsValue.valueOrNull ?? [];
+    final requests = requestsValue.value ?? [];
 
     try {
       final request = requests.firstWhere((r) => r.id == id);
@@ -151,7 +151,7 @@ class ActiveDraft extends _$ActiveDraft {
   // --- Quick Action Initializers ---
 
   Future<void> initSignMyself() async {
-    final user = ref.read(currentUserProvider).valueOrNull;
+    final user = ref.read(currentUserProvider).value;
     final newRequest = SignatureRequest(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: 'Sign Myself',
@@ -165,7 +165,7 @@ class ActiveDraft extends _$ActiveDraft {
                 name: user.name ?? '',
                 email: user.email,
                 role: 'signer',
-              )
+              ),
             ]
           : [],
     );
@@ -216,10 +216,7 @@ class ActiveDraft extends _$ActiveDraft {
     }
     if (current == null) return;
 
-    final updated = current.copyWith(
-      type: type,
-      updatedAt: DateTime.now(),
-    );
+    final updated = current.copyWith(type: type, updatedAt: DateTime.now());
 
     state = updated;
     await _persist(updated);
@@ -245,8 +242,11 @@ class ActiveDraft extends _$ActiveDraft {
     await _persist(updated);
   }
 
-  Future<void> updateFile(String filePath, String fileName,
-      {Uint8List? fileBytes}) async {
+  Future<void> updateFile(
+    String filePath,
+    String fileName, {
+    Uint8List? fileBytes,
+  }) async {
     var current = state;
     if (current == null) {
       await initializeNewDraft();
@@ -277,8 +277,9 @@ class ActiveDraft extends _$ActiveDraft {
       }
     }
 
-    final transientFileNotifier =
-        ref.read(transientFileProvider(current.id).notifier);
+    final transientFileNotifier = ref.read(
+      transientFileProvider(current.id).notifier,
+    );
 
     if (fileBytes != null) {
       transientFileNotifier.set(fileBytes);
@@ -312,10 +313,7 @@ class ActiveDraft extends _$ActiveDraft {
     final current = state;
     if (current == null) return;
 
-    final updated = current.copyWith(
-      fields: fields,
-      updatedAt: DateTime.now(),
-    );
+    final updated = current.copyWith(fields: fields, updatedAt: DateTime.now());
 
     state = updated;
     await _persist(updated);
@@ -326,8 +324,9 @@ class ActiveDraft extends _$ActiveDraft {
     if (current == null) return;
 
     final requestsNotifier = ref.read(requestsProvider.notifier);
-    final transientFileNotifier =
-        ref.read(transientFileProvider(current.id).notifier);
+    final transientFileNotifier = ref.read(
+      transientFileProvider(current.id).notifier,
+    );
 
     // Generate shareable link (mock)
     final signUrl = 'https://digito.app/sign/${current.id}';

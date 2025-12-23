@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/sender/presentation/chat_creation/chat_creation_screen.dart';
 import '../../features/sender/presentation/dashboard_screen.dart';
 import '../../features/sender/presentation/document_select_screen.dart';
@@ -86,7 +85,7 @@ GoRouter appRouter(Ref ref) {
         name: 'share',
         builder: (context, state) {
           final requestId = state.pathParameters['requestId']!;
-          final requests = ref.watch(requestsProvider).valueOrNull ?? [];
+          final requests = ref.watch(requestsProvider).value ?? [];
           final request = requests.firstWhere((r) => r.id == requestId);
           return ShareLinkView(
             request: request,

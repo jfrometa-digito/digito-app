@@ -46,11 +46,9 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
 
         // On web, file.path raises exception, so we intentionally keep it empty.
         // We rely on file.bytes.
-        await ref.read(activeDraftProvider.notifier).updateFile(
-              filePath,
-              file.name,
-              fileBytes: file.bytes,
-            );
+        await ref
+            .read(activeDraftProvider.notifier)
+            .updateFile(filePath, file.name, fileBytes: file.bytes);
         logger.log('File successfully passed to draft provider');
       } else {
         logger.log('File picking cancelled by user');
@@ -58,9 +56,9 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
     } catch (e, stack) {
       logger.error('Error picking file', e, stack);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking file: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking file: $e')));
       }
     } finally {
       if (mounted) {
@@ -84,7 +82,8 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
   @override
   Widget build(BuildContext context) {
     final activeDraft = ref.watch(activeDraftProvider);
-    final hasFile = (activeDraft?.filePath?.isNotEmpty == true) ||
+    final hasFile =
+        (activeDraft?.filePath?.isNotEmpty == true) ||
         (activeDraft?.fileBytes != null);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -104,8 +103,10 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
           children: [
             Text(
               'Select the document you want to send for signature.',
-              style:
-                  TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 16,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 32),
             Expanded(
@@ -121,7 +122,10 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Text('Next: Add Recipients'),
             ),
           ],
@@ -135,11 +139,11 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
     return GestureDetector(
       onTap: _pickFile,
       child: DottedBorder(
-        borderType: BorderType.RRect,
-        radius: const Radius.circular(12),
-        dashPattern: const [8, 4],
-        color: colorScheme.outline,
-        strokeWidth: 2,
+        // borderType: BorderType.RRect,
+        // radius: const Radius.circular(12),
+        // dashPattern: const [8, 4],
+        // color: colorScheme.outline,
+        // strokeWidth: 2,
         child: Container(
           width: double.infinity,
           height: double.infinity,
@@ -156,16 +160,20 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
                   color: colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.cloud_upload,
-                    size: 48, color: colorScheme.primary),
+                child: Icon(
+                  Icons.cloud_upload,
+                  size: 48,
+                  color: colorScheme.primary,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
                 'Tap to upload PDF',
                 style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -205,9 +213,10 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
               Text(
                 fileName,
                 style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -222,8 +231,10 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
         TextButton.icon(
           onPressed: _clearFile,
           icon: Icon(Icons.delete, color: colorScheme.error),
-          label:
-              Text('Remove file', style: TextStyle(color: colorScheme.error)),
+          label: Text(
+            'Remove file',
+            style: TextStyle(color: colorScheme.error),
+          ),
         ),
       ],
     );

@@ -35,49 +35,57 @@ class ProfileState extends _$ProfileState {
   }
 
   Future<void> updateContract(String type, bool accepted) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) return;
 
-    state = AsyncData(current.copyWith(
-      adhesionContractAccepted:
-          type == 'adhesion' ? accepted : current.adhesionContractAccepted,
-      certificateContractAccepted: type == 'certificate'
-          ? accepted
-          : current.certificateContractAccepted,
-      identityValidated:
-          type == 'identity' ? accepted : current.identityValidated,
-      adhesionContractAcceptedAt: type == 'adhesion' && accepted
-          ? DateTime.now()
-          : current.adhesionContractAcceptedAt,
-      certificateContractAcceptedAt: type == 'certificate' && accepted
-          ? DateTime.now()
-          : current.certificateContractAcceptedAt,
-      identityValidatedAt: type == 'identity' && accepted
-          ? DateTime.now()
-          : current.identityValidatedAt,
-    ));
+    state = AsyncData(
+      current.copyWith(
+        adhesionContractAccepted: type == 'adhesion'
+            ? accepted
+            : current.adhesionContractAccepted,
+        certificateContractAccepted: type == 'certificate'
+            ? accepted
+            : current.certificateContractAccepted,
+        identityValidated: type == 'identity'
+            ? accepted
+            : current.identityValidated,
+        adhesionContractAcceptedAt: type == 'adhesion' && accepted
+            ? DateTime.now()
+            : current.adhesionContractAcceptedAt,
+        certificateContractAcceptedAt: type == 'certificate' && accepted
+            ? DateTime.now()
+            : current.certificateContractAcceptedAt,
+        identityValidatedAt: type == 'identity' && accepted
+            ? DateTime.now()
+            : current.identityValidatedAt,
+      ),
+    );
   }
 
   Future<void> createCertificate() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null || !current.canCreateCertificate) return;
 
-    state = AsyncData(current.copyWith(
-      hasCertificate: true,
-      certificateId: 'CERT-${DateTime.now().millisecondsSinceEpoch}',
-      certificateCreatedAt: DateTime.now(),
-      certificateRevoked: false,
-    ));
+    state = AsyncData(
+      current.copyWith(
+        hasCertificate: true,
+        certificateId: 'CERT-${DateTime.now().millisecondsSinceEpoch}',
+        certificateCreatedAt: DateTime.now(),
+        certificateRevoked: false,
+      ),
+    );
   }
 
   Future<void> revokeCertificate() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) return;
 
-    state = AsyncData(current.copyWith(
-      hasCertificate: false,
-      certificateRevoked: true,
-      certificateRevokedAt: DateTime.now(),
-    ));
+    state = AsyncData(
+      current.copyWith(
+        hasCertificate: false,
+        certificateRevoked: true,
+        certificateRevokedAt: DateTime.now(),
+      ),
+    );
   }
 }

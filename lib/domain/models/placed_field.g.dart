@@ -7,13 +7,14 @@ part of 'placed_field.dart';
 // **************************************************************************
 
 PlacedField _$PlacedFieldFromJson(Map<String, dynamic> json) => PlacedField(
-      id: json['id'] as String,
-      type: $enumDecode(_$FieldTypeEnumMap, json['type']),
-      position:
-          PlacedField._offsetFromJson(json['position'] as Map<String, dynamic>),
-      pageNumber: (json['pageNumber'] as num).toInt(),
-      assignedToEmail: json['assignedToEmail'] as String?,
-    );
+  id: json['id'] as String,
+  type: $enumDecode(_$FieldTypeEnumMap, json['type']),
+  position: PlacedField._offsetFromJson(
+    json['position'] as Map<String, dynamic>,
+  ),
+  pageNumber: (json['pageNumber'] as num).toInt(),
+  assignedToEmail: json['assignedToEmail'] as String?,
+);
 
 Map<String, dynamic> _$PlacedFieldToJson(PlacedField instance) =>
     <String, dynamic>{

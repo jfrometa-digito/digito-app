@@ -6,21 +6,46 @@ part of 'logger_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$loggerHash() => r'54b846992d131a7caeb13ca19a213a84fd2c15cb';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [logger].
 @ProviderFor(logger)
-final loggerProvider = Provider<LoggerService>.internal(
-  logger,
-  name: r'loggerProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$loggerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const loggerProvider = LoggerProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef LoggerRef = ProviderRef<LoggerService>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class LoggerProvider
+    extends $FunctionalProvider<LoggerService, LoggerService, LoggerService>
+    with $Provider<LoggerService> {
+  const LoggerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loggerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loggerHash();
+
+  @$internal
+  @override
+  $ProviderElement<LoggerService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LoggerService create(Ref ref) {
+    return logger(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoggerService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoggerService>(value),
+    );
+  }
+}
+
+String _$loggerHash() => r'54b846992d131a7caeb13ca19a213a84fd2c15cb';

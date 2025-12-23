@@ -6,237 +6,307 @@ part of 'requests_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(requestsRepository)
+const requestsRepositoryProvider = RequestsRepositoryProvider._();
+
+final class RequestsRepositoryProvider
+    extends
+        $FunctionalProvider<
+          RequestsRepository,
+          RequestsRepository,
+          RequestsRepository
+        >
+    with $Provider<RequestsRepository> {
+  const RequestsRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'requestsRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$requestsRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<RequestsRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RequestsRepository create(Ref ref) {
+    return requestsRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RequestsRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RequestsRepository>(value),
+    );
+  }
+}
+
 String _$requestsRepositoryHash() =>
     r'0b510811a342afee4aced4c13a132a8325c859a1';
 
-/// See also [requestsRepository].
-@ProviderFor(requestsRepository)
-final requestsRepositoryProvider =
-    AutoDisposeProvider<RequestsRepository>.internal(
-  requestsRepository,
-  name: r'requestsRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$requestsRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(Requests)
+const requestsProvider = RequestsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef RequestsRepositoryRef = AutoDisposeProviderRef<RequestsRepository>;
+final class RequestsProvider
+    extends $AsyncNotifierProvider<Requests, List<SignatureRequest>> {
+  const RequestsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'requestsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$requestsHash();
+
+  @$internal
+  @override
+  Requests create() => Requests();
+}
+
 String _$requestsHash() => r'17493033d085e23609de22e5cb698d6f7b15426d';
 
-/// See also [Requests].
-@ProviderFor(Requests)
-final requestsProvider =
-    AutoDisposeAsyncNotifierProvider<Requests, List<SignatureRequest>>.internal(
-  Requests.new,
-  name: r'requestsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$requestsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+abstract class _$Requests extends $AsyncNotifier<List<SignatureRequest>> {
+  FutureOr<List<SignatureRequest>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<List<SignatureRequest>>, List<SignatureRequest>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<SignatureRequest>>,
+                List<SignatureRequest>
+              >,
+              AsyncValue<List<SignatureRequest>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$Requests = AutoDisposeAsyncNotifier<List<SignatureRequest>>;
+@ProviderFor(ActiveDraftId)
+const activeDraftIdProvider = ActiveDraftIdProvider._();
+
+final class ActiveDraftIdProvider
+    extends $NotifierProvider<ActiveDraftId, String?> {
+  const ActiveDraftIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'activeDraftIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$activeDraftIdHash();
+
+  @$internal
+  @override
+  ActiveDraftId create() => ActiveDraftId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
 String _$activeDraftIdHash() => r'53a27138185e390fa9f9a4e06b1842c602068c9b';
 
-/// See also [ActiveDraftId].
-@ProviderFor(ActiveDraftId)
-final activeDraftIdProvider =
-    AutoDisposeNotifierProvider<ActiveDraftId, String?>.internal(
-  ActiveDraftId.new,
-  name: r'activeDraftIdProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$activeDraftIdHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$ActiveDraftId = AutoDisposeNotifier<String?>;
-String _$transientFileHash() => r'd35036125249fd62db9e5558164f91a619ec9b3f';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+abstract class _$ActiveDraftId extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
   }
 }
 
-abstract class _$TransientFile
-    extends BuildlessAutoDisposeNotifier<Uint8List?> {
-  late final String requestId;
-
-  Uint8List? build(
-    String requestId,
-  );
-}
-
-/// See also [TransientFile].
 @ProviderFor(TransientFile)
-const transientFileProvider = TransientFileFamily();
+const transientFileProvider = TransientFileFamily._();
 
-/// See also [TransientFile].
-class TransientFileFamily extends Family<Uint8List?> {
-  /// See also [TransientFile].
-  const TransientFileFamily();
+final class TransientFileProvider
+    extends $NotifierProvider<TransientFile, Uint8List?> {
+  const TransientFileProvider._({
+    required TransientFileFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'transientFileProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
-  /// See also [TransientFile].
-  TransientFileProvider call(
-    String requestId,
-  ) {
-    return TransientFileProvider(
-      requestId,
-    );
+  @override
+  String debugGetCreateSourceHash() => _$transientFileHash();
+
+  @override
+  String toString() {
+    return r'transientFileProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  TransientFileProvider getProviderOverride(
-    covariant TransientFileProvider provider,
-  ) {
-    return call(
-      provider.requestId,
-    );
-  }
+  TransientFile create() => TransientFile();
 
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'transientFileProvider';
-}
-
-/// See also [TransientFile].
-class TransientFileProvider
-    extends AutoDisposeNotifierProviderImpl<TransientFile, Uint8List?> {
-  /// See also [TransientFile].
-  TransientFileProvider(
-    String requestId,
-  ) : this._internal(
-          () => TransientFile()..requestId = requestId,
-          from: transientFileProvider,
-          name: r'transientFileProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$transientFileHash,
-          dependencies: TransientFileFamily._dependencies,
-          allTransitiveDependencies:
-              TransientFileFamily._allTransitiveDependencies,
-          requestId: requestId,
-        );
-
-  TransientFileProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.requestId,
-  }) : super.internal();
-
-  final String requestId;
-
-  @override
-  Uint8List? runNotifierBuild(
-    covariant TransientFile notifier,
-  ) {
-    return notifier.build(
-      requestId,
-    );
-  }
-
-  @override
-  Override overrideWith(TransientFile Function() create) {
-    return ProviderOverride(
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Uint8List? value) {
+    return $ProviderOverride(
       origin: this,
-      override: TransientFileProvider._internal(
-        () => create()..requestId = requestId,
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        requestId: requestId,
-      ),
+      providerOverride: $SyncValueProvider<Uint8List?>(value),
     );
-  }
-
-  @override
-  AutoDisposeNotifierProviderElement<TransientFile, Uint8List?>
-      createElement() {
-    return _TransientFileProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is TransientFileProvider && other.requestId == requestId;
+    return other is TransientFileProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, requestId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin TransientFileRef on AutoDisposeNotifierProviderRef<Uint8List?> {
-  /// The parameter `requestId` of this provider.
-  String get requestId;
-}
+String _$transientFileHash() => r'd35036125249fd62db9e5558164f91a619ec9b3f';
 
-class _TransientFileProviderElement
-    extends AutoDisposeNotifierProviderElement<TransientFile, Uint8List?>
-    with TransientFileRef {
-  _TransientFileProviderElement(super.provider);
+final class TransientFileFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          TransientFile,
+          Uint8List?,
+          Uint8List?,
+          Uint8List?,
+          String
+        > {
+  const TransientFileFamily._()
+    : super(
+        retry: null,
+        name: r'transientFileProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  TransientFileProvider call(String requestId) =>
+      TransientFileProvider._(argument: requestId, from: this);
 
   @override
-  String get requestId => (origin as TransientFileProvider).requestId;
+  String toString() => r'transientFileProvider';
 }
 
-String _$activeDraftHash() => r'011c947fd2e7150ba99d1ed01d1196a732af59b3';
+abstract class _$TransientFile extends $Notifier<Uint8List?> {
+  late final _$args = ref.$arg as String;
+  String get requestId => _$args;
 
-/// See also [ActiveDraft].
+  Uint8List? build(String requestId);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref = this.ref as $Ref<Uint8List?, Uint8List?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Uint8List?, Uint8List?>,
+              Uint8List?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(ActiveDraft)
-final activeDraftProvider =
-    NotifierProvider<ActiveDraft, SignatureRequest?>.internal(
-  ActiveDraft.new,
-  name: r'activeDraftProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$activeDraftHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const activeDraftProvider = ActiveDraftProvider._();
 
-typedef _$ActiveDraft = Notifier<SignatureRequest?>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ActiveDraftProvider
+    extends $NotifierProvider<ActiveDraft, SignatureRequest?> {
+  const ActiveDraftProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'activeDraftProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$activeDraftHash();
+
+  @$internal
+  @override
+  ActiveDraft create() => ActiveDraft();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SignatureRequest? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SignatureRequest?>(value),
+    );
+  }
+}
+
+String _$activeDraftHash() => r'de05a7ec554760ea2756c6d569bd09b97327984f';
+
+abstract class _$ActiveDraft extends $Notifier<SignatureRequest?> {
+  SignatureRequest? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<SignatureRequest?, SignatureRequest?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<SignatureRequest?, SignatureRequest?>,
+              SignatureRequest?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

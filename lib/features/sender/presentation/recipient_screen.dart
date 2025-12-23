@@ -152,7 +152,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   void _onIncludeMyselfToggled(bool? value) {
     if (value == null) return;
 
-    final user = ref.read(currentUserProvider).valueOrNull;
+    final user = ref.read(currentUserProvider).value;
 
     setState(() {
       _includeMyself = value;
@@ -186,7 +186,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       // If user is null but they tried to check it, show a message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('User profile not loaded. Please try again.')),
+          content: Text('User profile not loaded. Please try again.'),
+        ),
       );
       setState(() => _includeMyself = false);
     }
@@ -197,11 +198,13 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   void _syncToDraft() {
     final recipients = <Recipient>[];
     for (int i = 0; i < _nameControllers.length; i++) {
-      recipients.add(Recipient(
-        name: _nameControllers[i].text,
-        email: _emailControllers[i].text,
-        id: _recipientIds[i],
-      ));
+      recipients.add(
+        Recipient(
+          name: _nameControllers[i].text,
+          email: _emailControllers[i].text,
+          id: _recipientIds[i],
+        ),
+      );
     }
     ref.read(activeDraftProvider.notifier).updateRecipients(recipients);
   }
@@ -234,7 +237,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (type == SignatureRequestType.selfSign && count != 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Self signing must have exactly 1 signer.')),
+          content: Text('Self signing must have exactly 1 signer.'),
+        ),
       );
       return;
     }
@@ -261,7 +265,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final isOneOnOne = activeDraft.type == SignatureRequestType.oneOnOne;
     final canAddMore = !isSelfSign && !isOneOnOne;
 
-    ref.read(loggerProvider).log('RecipientScreen Build: Type=${activeDraft.type}, isSelfSign=$isSelfSign, isOneOnOne=$isOneOnOne, canAddMore=$canAddMore, recipientCount=${_nameControllers.length}');
+    ref
+        .read(loggerProvider)
+        .log(
+          'RecipientScreen Build: Type=${activeDraft.type}, isSelfSign=$isSelfSign, isOneOnOne=$isOneOnOne, canAddMore=$canAddMore, recipientCount=${_nameControllers.length}',
+        );
 
     if (_isInitializing) {
       return Scaffold(
@@ -271,7 +279,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     }
 
     // Ensure _includeMyself stays in sync if user loads or changes
-    final user = userAsync.valueOrNull;
+    final user = userAsync.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -325,15 +333,20 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                           ? 'Loading profile...'
                           : 'Auto-fill my account details',
                       style: TextStyle(
-                          fontSize: 12, color: colorScheme.onSurfaceVariant),
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    secondary: Icon(Icons.check_circle_outline,
-                        color: user == null
-                            ? colorScheme.outline
-                            : colorScheme.primary),
+                    secondary: Icon(
+                      Icons.check_circle_outline,
+                      color: user == null
+                          ? colorScheme.outline
+                          : colorScheme.primary,
+                    ),
                     controlAffinity: ListTileControlAffinity.trailing,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
@@ -420,7 +433,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
               Text(
                 isSelfSign ? 'Your Information' : 'Recipient ${index + 1}',
                 style: TextStyle(
-                    fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
               if (canDelete)
                 IconButton(

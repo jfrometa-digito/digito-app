@@ -6,23 +6,56 @@ part of 'error_handler_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$errorHandlerHash() => r'd68f4126b287dd95f31ad4a9b3bb17904ee66967';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// Provider for the error handler service
+
+@ProviderFor(errorHandler)
+const errorHandlerProvider = ErrorHandlerProvider._();
 
 /// Provider for the error handler service
-///
-/// Copied from [errorHandler].
-@ProviderFor(errorHandler)
-final errorHandlerProvider = Provider<ErrorHandlerService>.internal(
-  errorHandler,
-  name: r'errorHandlerProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$errorHandlerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ErrorHandlerRef = ProviderRef<ErrorHandlerService>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ErrorHandlerProvider
+    extends
+        $FunctionalProvider<
+          ErrorHandlerService,
+          ErrorHandlerService,
+          ErrorHandlerService
+        >
+    with $Provider<ErrorHandlerService> {
+  /// Provider for the error handler service
+  const ErrorHandlerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'errorHandlerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$errorHandlerHash();
+
+  @$internal
+  @override
+  $ProviderElement<ErrorHandlerService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ErrorHandlerService create(Ref ref) {
+    return errorHandler(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ErrorHandlerService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ErrorHandlerService>(value),
+    );
+  }
+}
+
+String _$errorHandlerHash() => r'd68f4126b287dd95f31ad4a9b3bb17904ee66967';

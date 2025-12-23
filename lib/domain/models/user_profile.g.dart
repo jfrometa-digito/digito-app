@@ -7,46 +7,45 @@ part of 'user_profile.dart';
 // **************************************************************************
 
 UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String?,
-      picture: json['picture'] as String?,
-      role:
-          $enumDecodeNullable(_$UserRoleEnumMap, json['role']) ?? UserRole.user,
-      status: $enumDecodeNullable(_$AccountStatusEnumMap, json['status']) ??
-          AccountStatus.active,
-      adhesionContractAccepted:
-          json['adhesionContractAccepted'] as bool? ?? false,
-      certificateContractAccepted:
-          json['certificateContractAccepted'] as bool? ?? false,
-      adhesionContractAcceptedAt: json['adhesionContractAcceptedAt'] == null
-          ? null
-          : DateTime.parse(json['adhesionContractAcceptedAt'] as String),
-      certificateContractAcceptedAt:
-          json['certificateContractAcceptedAt'] == null
-              ? null
-              : DateTime.parse(json['certificateContractAcceptedAt'] as String),
-      identityValidated: json['identityValidated'] as bool? ?? false,
-      identityValidatedAt: json['identityValidatedAt'] == null
-          ? null
-          : DateTime.parse(json['identityValidatedAt'] as String),
-      hasCertificate: json['hasCertificate'] as bool? ?? false,
-      certificateId: json['certificateId'] as String?,
-      certificateCreatedAt: json['certificateCreatedAt'] == null
-          ? null
-          : DateTime.parse(json['certificateCreatedAt'] as String),
-      certificateRevoked: json['certificateRevoked'] as bool? ?? false,
-      certificateRevokedAt: json['certificateRevokedAt'] == null
-          ? null
-          : DateTime.parse(json['certificateRevokedAt'] as String),
-      permissions: (json['permissions'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      auth0Id: json['auth0Id'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      lastAccess: DateTime.parse(json['lastAccess'] as String),
-    );
+  id: json['id'] as String,
+  email: json['email'] as String,
+  name: json['name'] as String?,
+  picture: json['picture'] as String?,
+  role: $enumDecodeNullable(_$UserRoleEnumMap, json['role']) ?? UserRole.user,
+  status:
+      $enumDecodeNullable(_$AccountStatusEnumMap, json['status']) ??
+      AccountStatus.active,
+  adhesionContractAccepted: json['adhesionContractAccepted'] as bool? ?? false,
+  certificateContractAccepted:
+      json['certificateContractAccepted'] as bool? ?? false,
+  adhesionContractAcceptedAt: json['adhesionContractAcceptedAt'] == null
+      ? null
+      : DateTime.parse(json['adhesionContractAcceptedAt'] as String),
+  certificateContractAcceptedAt: json['certificateContractAcceptedAt'] == null
+      ? null
+      : DateTime.parse(json['certificateContractAcceptedAt'] as String),
+  identityValidated: json['identityValidated'] as bool? ?? false,
+  identityValidatedAt: json['identityValidatedAt'] == null
+      ? null
+      : DateTime.parse(json['identityValidatedAt'] as String),
+  hasCertificate: json['hasCertificate'] as bool? ?? false,
+  certificateId: json['certificateId'] as String?,
+  certificateCreatedAt: json['certificateCreatedAt'] == null
+      ? null
+      : DateTime.parse(json['certificateCreatedAt'] as String),
+  certificateRevoked: json['certificateRevoked'] as bool? ?? false,
+  certificateRevokedAt: json['certificateRevokedAt'] == null
+      ? null
+      : DateTime.parse(json['certificateRevokedAt'] as String),
+  permissions:
+      (json['permissions'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  auth0Id: json['auth0Id'] as String?,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  lastAccess: DateTime.parse(json['lastAccess'] as String),
+);
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
     <String, dynamic>{
@@ -58,10 +57,10 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'status': _$AccountStatusEnumMap[instance.status]!,
       'adhesionContractAccepted': instance.adhesionContractAccepted,
       'certificateContractAccepted': instance.certificateContractAccepted,
-      'adhesionContractAcceptedAt':
-          instance.adhesionContractAcceptedAt?.toIso8601String(),
-      'certificateContractAcceptedAt':
-          instance.certificateContractAcceptedAt?.toIso8601String(),
+      'adhesionContractAcceptedAt': instance.adhesionContractAcceptedAt
+          ?.toIso8601String(),
+      'certificateContractAcceptedAt': instance.certificateContractAcceptedAt
+          ?.toIso8601String(),
       'identityValidated': instance.identityValidated,
       'identityValidatedAt': instance.identityValidatedAt?.toIso8601String(),
       'hasCertificate': instance.hasCertificate,
@@ -75,10 +74,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'lastAccess': instance.lastAccess.toIso8601String(),
     };
 
-const _$UserRoleEnumMap = {
-  UserRole.admin: 'admin',
-  UserRole.user: 'user',
-};
+const _$UserRoleEnumMap = {UserRole.admin: 'admin', UserRole.user: 'user'};
 
 const _$AccountStatusEnumMap = {
   AccountStatus.active: 'active',

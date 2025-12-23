@@ -15,17 +15,20 @@ SignatureRequest _$SignatureRequestFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-      recipients: (json['recipients'] as List<dynamic>?)
+      recipients:
+          (json['recipients'] as List<dynamic>?)
               ?.map((e) => Recipient.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      fields: (json['fields'] as List<dynamic>?)
+      fields:
+          (json['fields'] as List<dynamic>?)
               ?.map((e) => PlacedField.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       filePath: json['filePath'] as String?,
       signUrl: json['signUrl'] as String?,
-      type: $enumDecodeNullable(_$SignatureRequestTypeEnumMap, json['type']) ??
+      type:
+          $enumDecodeNullable(_$SignatureRequestTypeEnumMap, json['type']) ??
           SignatureRequestType.multiParty,
     );
 
