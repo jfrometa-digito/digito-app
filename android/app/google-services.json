@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "594521281368",
+    "project_id": "digitotest-ac532",
+    "storage_bucket": "digitotest-ac532.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594521281368:android:a3d92afddfa0853d560b2d",
+        "android_client_info": {
+          "package_name": "com.example.digito_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM2719e1og7md78pbERYMLZ2DhgQvNtLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

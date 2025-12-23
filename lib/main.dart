@@ -17,11 +17,11 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   // Initialize Firebase for web platform (required for Firebase AI)
-  if (kIsWeb) {
+  // if (kIsWeb) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  }
+  // }
 
   final container = ProviderContainer();
   final logger = container.read(loggerProvider);
