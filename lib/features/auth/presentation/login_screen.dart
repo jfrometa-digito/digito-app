@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/error_handler_provider.dart';
 import '../../../../core/services/auth_service.dart';
@@ -114,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   // Logo/Branding
                   Icon(
-                    LucideIcons.fileSignature,
+                    Icons.description,
                     size: 72,
                     color: colorScheme.primary,
                   ),
@@ -141,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   // Social Login Buttons
                   _SocialLoginButton(
-                    icon: LucideIcons.mail,
+                    icon: Icons.email,
                     label: 'Continue with Google',
                     color: Colors.white,
                     textColor: Colors.black87,
@@ -151,7 +151,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   _SocialLoginButton(
-                    icon: LucideIcons.apple,
+                    icon: Icons.apple,
                     label: 'Continue with Apple',
                     color: Colors.black,
                     textColor: Colors.white,
@@ -161,7 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   _SocialLoginButton(
-                    icon: LucideIcons.square,
+                    icon: Icons.square,
                     label: 'Continue with Microsoft',
                     color: const Color(0xFF00A4EF),
                     textColor: Colors.white,
@@ -200,7 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Email',
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(LucideIcons.mail),
+                            prefixIcon: Icon(Icons.email),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -220,7 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Password',
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(LucideIcons.lock),
+                            prefixIcon: Icon(Icons.lock),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {

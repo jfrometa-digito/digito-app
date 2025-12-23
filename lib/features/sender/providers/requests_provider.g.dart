@@ -7,7 +7,7 @@ part of 'requests_provider.dart';
 // **************************************************************************
 
 String _$requestsRepositoryHash() =>
-    r'b1da5db66412c17324e966845b62ad8b8e16d157';
+    r'0b510811a342afee4aced4c13a132a8325c859a1';
 
 /// See also [requestsRepository].
 @ProviderFor(requestsRepository)
@@ -223,7 +223,7 @@ class _TransientFileProviderElement
   String get requestId => (origin as TransientFileProvider).requestId;
 }
 
-String _$activeDraftHash() => r'9585b0e9ef777f4b8fc83ce12404d9bbf7b8e739';
+String _$activeDraftHash() => r'011c947fd2e7150ba99d1ed01d1196a732af59b3';
 
 /// See also [ActiveDraft].
 @ProviderFor(ActiveDraft)

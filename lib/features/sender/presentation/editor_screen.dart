@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../domain/models/placed_field.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../providers/requests_provider.dart';
@@ -53,8 +53,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   @override
   Widget build(BuildContext context) {
     final activeDraft = ref.watch(activeDraftProvider);
-    if (activeDraft == null)
+    if (activeDraft == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -109,7 +110,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(LucideIcons.fileText,
+                Icon(Icons.description,
                     size: 64,
                     color: Theme.of(context)
                         .colorScheme
@@ -186,25 +187,25 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         children: [
           _DraggableTool(
             type: FieldType.signature,
-            icon: LucideIcons.penTool,
+            icon: Icons.edit,
             label: 'Signature',
             color: Colors.indigo,
           ),
           _DraggableTool(
             type: FieldType.initials,
-            icon: LucideIcons.type,
+            icon: Icons.text_fields,
             label: 'Initials',
             color: Colors.orange,
           ),
           _DraggableTool(
             type: FieldType.date,
-            icon: LucideIcons.calendar,
+            icon: Icons.calendar_today,
             label: 'Date',
             color: Colors.green,
           ),
           _DraggableTool(
             type: FieldType.text,
-            icon: LucideIcons.textCursor,
+            icon: Icons.text_format,
             label: 'Text',
             color: Colors.blue,
           ),
@@ -280,22 +281,22 @@ class _PlacedFieldWidget extends StatelessWidget {
     switch (field.type) {
       case FieldType.signature:
         color = Colors.indigo;
-        icon = LucideIcons.penTool;
+        icon = Icons.edit;
         label = 'Signature';
         break;
       case FieldType.initials:
         color = Colors.orange;
-        icon = LucideIcons.type;
+        icon = Icons.text_fields;
         label = 'Initials';
         break;
       case FieldType.date:
         color = Colors.green;
-        icon = LucideIcons.calendar;
+        icon = Icons.calendar_today;
         label = 'Date';
         break;
       case FieldType.text:
         color = Colors.blue;
-        icon = LucideIcons.textCursor;
+        icon = Icons.text_format;
         label = 'Text';
         break;
     }

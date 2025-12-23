@@ -3,17 +3,19 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
 import '../../../../domain/models/placed_field.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/logger_provider.dart';
 import '../data/requests_repository.dart';
 
 part 'requests_provider.g.dart';
 
 // Repository Provider
 @riverpod
-RequestsRepository requestsRepository(RequestsRepositoryRef ref) {
+RequestsRepository requestsRepository(Ref ref) {
   return RequestsRepository();
 }
 
@@ -139,7 +141,9 @@ class ActiveDraft extends _$ActiveDraft {
         state = request;
       }
     } catch (e) {
-      print('DEBUG: ActiveDraft.loadExisting - FAILURE - ID: $id - Error: $e');
+      ref
+          .read(loggerProvider)
+          .error('ActiveDraft.loadExisting - FAILURE', e, null);
       state = null;
     }
   }
@@ -204,6 +208,43 @@ class ActiveDraft extends _$ActiveDraft {
 
   // --- Actions to update the draft ---
 
+  Future<void> updateType(SignatureRequestType type) async {
+    var current = state;
+    if (current == null) {
+      await initializeNewDraft();
+      current = state;
+    }
+    if (current == null) return;
+
+    final updated = current.copyWith(
+      type: type,
+      updatedAt: DateTime.now(),
+    );
+
+    state = updated;
+    await _persist(updated);
+  }
+
+  Future<void> addRecipient(Recipient recipient) async {
+    var current = state;
+    if (current == null) {
+      await initializeNewDraft();
+      current = state;
+    }
+    if (current == null) return;
+
+    final newRecipients = List<Recipient>.from(current.recipients)
+      ..add(recipient);
+
+    final updated = current.copyWith(
+      recipients: newRecipients,
+      updatedAt: DateTime.now(),
+    );
+
+    state = updated;
+    await _persist(updated);
+  }
+
   Future<void> updateFile(String filePath, String fileName,
       {Uint8List? fileBytes}) async {
     var current = state;
@@ -225,10 +266,14 @@ class ActiveDraft extends _$ActiveDraft {
         if (await file.exists()) {
           await file.copy(persistentPath);
           finalPath = persistentPath;
-          print('DEBUG: updateFile - Copied to persistent path: $finalPath');
+          ref
+              .read(loggerProvider)
+              .log('updateFile - Copied to persistent path: $finalPath');
         }
       } catch (e) {
-        print('DEBUG: updateFile - Error persisting file: $e');
+        ref
+            .read(loggerProvider)
+            .error('updateFile - Error persisting file', e, null);
       }
     }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../domain/models/app_error.dart';
 
 /// Reusable error dialog with recovery actions
@@ -41,15 +41,15 @@ class ErrorDialog extends StatelessWidget {
   IconData _getErrorIcon(ErrorType type) {
     switch (type) {
       case ErrorType.network:
-        return LucideIcons.wifiOff;
+        return Icons.wifi_off;
       case ErrorType.auth:
-        return LucideIcons.shieldAlert;
+        return Icons.security;
       case ErrorType.validation:
-        return LucideIcons.info;
+        return Icons.info;
       case ErrorType.server:
-        return LucideIcons.serverCrash;
+        return Icons.cloud_off;
       case ErrorType.unknown:
-        return LucideIcons.alertTriangle;
+        return Icons.warning_amber;
     }
   }
 

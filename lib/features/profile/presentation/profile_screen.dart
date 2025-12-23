@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import 'package:intl/intl.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/providers/profile_provider.dart';
@@ -189,8 +189,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         title: const Text('Modo Oscuro'),
                         secondary: Icon(
                           Theme.of(context).brightness == Brightness.light
-                              ? LucideIcons.moon
-                              : LucideIcons.sun,
+                              ? Icons.dark_mode
+                              : Icons.light_mode,
                         ),
                         value: Theme.of(context).brightness == Brightness.dark,
                         onChanged: (_) =>
@@ -299,7 +299,7 @@ class _RolesTab extends StatelessWidget {
               if (profile.isAdmin)
                 FilledButton.icon(
                   onPressed: () {},
-                  icon: const Icon(LucideIcons.plus, size: 16),
+                  icon: const Icon(Icons.add, size: 16),
                   label: const Text('Asignar rol'),
                 ),
             ],
@@ -335,7 +335,7 @@ class _RoleTile extends StatelessWidget {
         children: [
           CircleAvatar(
             backgroundColor: colorScheme.surfaceContainerHighest,
-            child: Icon(LucideIcons.user,
+            child: Icon(Icons.person,
                 size: 20, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(width: 12),
@@ -372,8 +372,8 @@ class _PermissionsTab extends StatelessWidget {
                 TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
         const SizedBox(height: 12),
         ...profile.permissions.map((p) => ListTile(
-              leading: const Icon(LucideIcons.checkCircle2,
-                  color: Colors.green, size: 20),
+              leading:
+                  const Icon(Icons.check_circle, color: Colors.green, size: 20),
               title: Text(p),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -493,7 +493,7 @@ class _PrerequisiteItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(isDone ? LucideIcons.checkCircle2 : LucideIcons.circle,
+            Icon(isDone ? Icons.check_circle : Icons.circle,
                 color: isDone ? Colors.green : colorScheme.outline, size: 20),
             const SizedBox(width: 12),
             Expanded(
@@ -504,7 +504,7 @@ class _PrerequisiteItem extends StatelessWidget {
             if (!isDone)
               TextButton(onPressed: onAction, child: const Text('Completar'))
             else
-              const Icon(LucideIcons.check, color: Colors.green, size: 16),
+              const Icon(Icons.check, color: Colors.green, size: 16),
           ],
         ),
       ),
@@ -527,7 +527,7 @@ class _CertificateActive extends StatelessWidget {
           borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
-          const Icon(LucideIcons.shieldCheck, size: 48, color: Colors.green),
+          const Icon(Icons.security, size: 48, color: Colors.green),
           const SizedBox(height: 12),
           const Text('Certificado Activo',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
@@ -568,7 +568,7 @@ class _CertificateActionCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(canCreate ? LucideIcons.unlock : LucideIcons.lock,
+          Icon(canCreate ? Icons.lock_open : Icons.lock,
               size: 48,
               color: canCreate ? Colors.blue : colorScheme.onSurfaceVariant),
           const SizedBox(height: 12),

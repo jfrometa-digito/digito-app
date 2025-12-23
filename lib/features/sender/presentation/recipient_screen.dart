@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../domain/models/signature_request.dart';
 import '../../../../domain/models/recipient.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/logger_provider.dart';
 import '../providers/requests_provider.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
@@ -260,8 +261,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final isOneOnOne = activeDraft.type == SignatureRequestType.oneOnOne;
     final canAddMore = !isSelfSign && !isOneOnOne;
 
-    print(
-        'DEBUG Build: Type=${activeDraft.type}, isSelfSign=$isSelfSign, isOneOnOne=$isOneOnOne, canAddMore=$canAddMore, recipientCount=${_nameControllers.length}');
+    ref.read(loggerProvider).log('RecipientScreen Build: Type=${activeDraft.type}, isSelfSign=$isSelfSign, isOneOnOne=$isOneOnOne, canAddMore=$canAddMore, recipientCount=${_nameControllers.length}');
 
     if (_isInitializing) {
       return Scaffold(
@@ -277,7 +277,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       appBar: AppBar(
         title: Text(title),
         leading: IconButton(
-          icon: const Icon(LucideIcons.chevronLeft),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
@@ -327,7 +327,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                       style: TextStyle(
                           fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
-                    secondary: Icon(LucideIcons.userCheck,
+                    secondary: Icon(Icons.check_circle_outline,
                         color: user == null
                             ? colorScheme.outline
                             : colorScheme.primary),
@@ -357,7 +357,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                 if (canAddMore)
                   OutlinedButton.icon(
                     onPressed: () => _addRecipientRow(),
-                    icon: const Icon(LucideIcons.plus),
+                    icon: const Icon(Icons.add),
                     label: const Text('Add Another Recipient'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
@@ -424,8 +424,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
               ),
               if (canDelete)
                 IconButton(
-                  icon: Icon(LucideIcons.trash2,
-                      size: 20, color: colorScheme.error),
+                  icon: Icon(Icons.delete, size: 20, color: colorScheme.error),
                   onPressed: () => _removeRefcipientRow(index),
                 ),
             ],
@@ -435,7 +434,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
             controller: _nameControllers[index],
             decoration: const InputDecoration(
               labelText: 'Full Name',
-              prefixIcon: Icon(LucideIcons.user),
+              prefixIcon: Icon(Icons.person),
             ),
           ),
           const SizedBox(height: 16),
@@ -443,7 +442,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
             controller: _emailControllers[index],
             decoration: const InputDecoration(
               labelText: 'Email Address',
-              prefixIcon: Icon(LucideIcons.mail),
+              prefixIcon: Icon(Icons.email),
             ),
           ),
         ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import 'package:intl/intl.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../core/providers/auth_provider.dart';
@@ -25,6 +25,14 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           _buildProfileMenu(context, ref),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          ref.read(activeDraftProvider.notifier).clear();
+          context.push('/create/chat');
+        },
+        label: const Text('Create with AI'),
+        icon: const Icon(Icons.flash_on),
       ),
       body: requestsAsync.when(
         data: (requests) {
@@ -122,13 +130,13 @@ class DashboardScreen extends ConsumerWidget {
       data: (isAuth) {
         if (isAuth) {
           return PopupMenuButton<String>(
-            icon: const Icon(LucideIcons.userCircle),
+            icon: const Icon(Icons.account_circle),
             itemBuilder: (context) => <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
                 value: 'profile',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.user, size: 20),
+                    Icon(Icons.person, size: 20),
                     SizedBox(width: 12),
                     Text('Profile'),
                   ],
@@ -143,7 +151,7 @@ class DashboardScreen extends ConsumerWidget {
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.logOut, size: 20),
+                    Icon(Icons.logout, size: 20),
                     SizedBox(width: 12),
                     Text('Log Out'),
                   ],
@@ -170,13 +178,13 @@ class DashboardScreen extends ConsumerWidget {
               onPressed: () => ref.read(appThemeModeProvider.notifier).toggle(),
               icon: Icon(
                 Theme.of(context).brightness == Brightness.light
-                    ? LucideIcons.moon
-                    : LucideIcons.sun,
+                    ? Icons.dark_mode
+                    : Icons.light_mode,
               ),
             ),
             IconButton(
               onPressed: () => context.pushNamed('login'),
-              icon: const Icon(LucideIcons.userCircle),
+              icon: const Icon(Icons.account_circle),
             ),
           ],
         );
@@ -190,7 +198,7 @@ class DashboardScreen extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2)))),
       error: (_, __) => IconButton(
         onPressed: () => context.pushNamed('login'),
-        icon: const Icon(LucideIcons.userCircle),
+        icon: const Icon(Icons.account_circle),
       ),
     );
   }
@@ -231,7 +239,7 @@ class _QuickActionsSection extends ConsumerWidget {
                 child: _QuickActionCard(
                   title: 'Sign Myself',
                   subtitle: 'Quick solo signature',
-                  icon: LucideIcons.penTool,
+                  icon: Icons.edit,
                   color: colorScheme.primary,
                   onTap: () async {
                     await ref
@@ -246,7 +254,7 @@ class _QuickActionsSection extends ConsumerWidget {
                 child: _QuickActionCard(
                   title: '1-on-1 Sign',
                   subtitle: 'You and another',
-                  icon: LucideIcons.users,
+                  icon: Icons.people,
                   color: Colors.indigo,
                   onTap: () async {
                     await ref.read(activeDraftProvider.notifier).initOneOnOne();
@@ -260,7 +268,7 @@ class _QuickActionsSection extends ConsumerWidget {
           _QuickActionCard(
             title: 'Multi-party Signature',
             subtitle: 'Request signatures from multiple recipients',
-            icon: LucideIcons.fileSignature,
+            icon: Icons.description,
             isWide: true,
             color: Colors.teal,
             onTap: () async {
@@ -356,8 +364,8 @@ class _EmptyState extends StatelessWidget {
           children: [
             Opacity(
               opacity: 0.5,
-              child: Icon(LucideIcons.fileSignature,
-                  size: 64, color: colorScheme.outline),
+              child:
+                  Icon(Icons.description, size: 64, color: colorScheme.outline),
             ),
             const SizedBox(height: 16),
             Text(
@@ -425,7 +433,7 @@ class _RequestCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  LucideIcons.fileText,
+                  Icons.description,
                   color: _getStatusColor(request.status),
                   size: 26,
                 ),
@@ -494,14 +502,13 @@ class _RequestCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(LucideIcons.arrowRight,
+                        Icon(Icons.arrow_right_alt,
                             size: 12, color: colorScheme.primary),
                       ],
                     ),
                   ),
                 ),
-              Icon(LucideIcons.chevronRight,
-                  color: colorScheme.outline, size: 20),
+              Icon(Icons.chevron_right, color: colorScheme.outline, size: 20),
             ],
           ),
         ),
@@ -518,7 +525,7 @@ class _ThemeMenuItem extends ConsumerWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
     return Row(
       children: [
-        Icon(isLight ? LucideIcons.moon : LucideIcons.sun, size: 20),
+        Icon(isLight ? Icons.dark_mode : Icons.light_mode, size: 20),
         const SizedBox(width: 12),
         Text(isLight ? 'Dark Mode' : 'Light Mode'),
       ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../domain/models/signature_request.dart';
 
 class ShareLinkView extends StatelessWidget {
@@ -45,7 +45,7 @@ class ShareLinkView extends StatelessWidget {
                   color: Colors.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(LucideIcons.checkCircle2,
+                child: const Icon(Icons.check_circle,
                     size: 80, color: Colors.green),
               ),
               const SizedBox(height: 32),
@@ -80,7 +80,7 @@ class ShareLinkView extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(LucideIcons.copy, size: 20),
+                      icon: const Icon(Icons.copy, size: 20),
                       onPressed: () => _copyToClipboard(context),
                       tooltip: 'Copy Link',
                     ),

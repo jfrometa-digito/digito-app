@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "digito_app (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "args": [
+                "--web-port",
+                "3000"
+            ],
+            "toolArgs": [
+                "--dart-define",
+                "GEMINI_API_KEY=YOUR_VALID_API_KEY_HERE"
+            ]
+        },
+        {
+            "name": "digito_app (Profile)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "args": [
+                "--web-port",
+                "3000"
+            ]
+        }
+    ]
+}

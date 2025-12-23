@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/sender/presentation/chat_creation/chat_creation_screen.dart';
 import '../../features/sender/presentation/dashboard_screen.dart';
 import '../../features/sender/presentation/document_select_screen.dart';
 import '../../features/sender/presentation/recipient_screen.dart';
@@ -15,7 +17,7 @@ import '../../features/sender/providers/requests_provider.dart';
 part 'app_router.g.dart';
 
 @riverpod
-GoRouter appRouter(AppRouterRef ref) {
+GoRouter appRouter(Ref ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
@@ -45,6 +47,11 @@ GoRouter appRouter(AppRouterRef ref) {
                 builder: (context, state) => const ReviewScreen(),
               ),
             ],
+          ),
+          GoRoute(
+            path: 'create/chat',
+            name: 'create_chat',
+            builder: (context, state) => const ChatCreationScreen(),
           ),
           GoRoute(
             path: 'history',

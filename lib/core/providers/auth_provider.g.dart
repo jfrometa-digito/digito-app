@@ -6,7 +6,7 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authServiceHash() => r'edcbbac294768c5dd322ac487f09da371ab2a9c4';
+String _$authServiceHash() => r'2dacf20cec62ded7d304e5c144c83ff7252da9a0';
 
 /// Provider for the authentication service
 ///
@@ -24,7 +24,7 @@ final authServiceProvider = Provider<AuthService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthServiceRef = ProviderRef<AuthService>;
-String _$currentUserHash() => r'1cc8f5c546ce84a30e4c7e23b1e5961edf05bb95';
+String _$currentUserHash() => r'c7c8646483d34d1cc4e5c7416f25c1d12f9f4754';
 
 /// Provider for the current authenticated user
 ///
@@ -42,7 +42,7 @@ final currentUserProvider = AutoDisposeFutureProvider<AuthUser?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CurrentUserRef = AutoDisposeFutureProviderRef<AuthUser?>;
-String _$isAuthenticatedHash() => r'4298b03fbc015676892aad26e7be7e8b02bd7ea6';
+String _$isAuthenticatedHash() => r'7bc4de11d0753ca84665ea9892c3484460651968';
 
 /// Provider for authentication status
 ///

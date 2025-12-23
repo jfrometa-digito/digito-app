@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../domain/models/signature_request.dart';
 import '../providers/requests_provider.dart';
 import 'widgets/share_link_view.dart';
@@ -72,14 +72,14 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
           children: [
             _SummaryCard(
               title: 'Document',
-              icon: LucideIcons.fileText,
+              icon: Icons.description,
               content: activeDraft!.title,
               subContent: activeDraft.filePath, // Or show size if we had it
             ),
             const SizedBox(height: 16),
             _SummaryCard(
               title: 'Recipients',
-              icon: LucideIcons.users,
+              icon: Icons.people,
               content: '${activeDraft.recipients.length} Signers',
               subContent: activeDraft.recipients
                   .map((r) => '${r.name} (${r.email})')
@@ -88,7 +88,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             const SizedBox(height: 16),
             const _SummaryCard(
               title: 'Message',
-              icon: LucideIcons.messageSquare,
+              icon: Icons.message,
               content:
                   'Please sign this document.', // We could add a message field to the model later
             ),
@@ -111,7 +111,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                     ),
-                    icon: const Icon(LucideIcons.send),
+                    icon: const Icon(Icons.send),
                     label: const Text('Send Request'),
                   ),
                 ),

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../../../core/providers/logger_provider.dart';
 import '../providers/requests_provider.dart';
 
@@ -93,7 +93,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
       appBar: AppBar(
         title: const Text('Upload Document'),
         leading: IconButton(
-          icon: const Icon(LucideIcons.x),
+          icon: const Icon(Icons.close),
           onPressed: () => context.pop(),
         ),
       ),
@@ -156,7 +156,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
                   color: colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(LucideIcons.uploadCloud,
+                child: Icon(Icons.cloud_upload,
                     size: 48, color: colorScheme.primary),
               ),
               const SizedBox(height: 24),
@@ -200,7 +200,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
           ),
           child: Column(
             children: [
-              Icon(LucideIcons.fileText, size: 64, color: colorScheme.primary),
+              Icon(Icons.description, size: 64, color: colorScheme.primary),
               const SizedBox(height: 16),
               Text(
                 fileName,
@@ -221,7 +221,7 @@ class _DocumentSelectScreenState extends ConsumerState<DocumentSelectScreen> {
         const SizedBox(height: 32),
         TextButton.icon(
           onPressed: _clearFile,
-          icon: Icon(LucideIcons.trash2, color: colorScheme.error),
+          icon: Icon(Icons.delete, color: colorScheme.error),
           label:
               Text('Remove file', style: TextStyle(color: colorScheme.error)),
         ),

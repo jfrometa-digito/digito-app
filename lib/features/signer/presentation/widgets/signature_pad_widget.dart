@@ -63,9 +63,9 @@ class _SignaturePadWidgetState extends State<SignaturePadWidget> {
                 if (_controller.isNotEmpty) {
                   _export();
                 } else {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     const SnackBar(content: Text('Please sign first')),
-                   );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please sign first')),
+                  );
                 }
               },
               child: const Text('Confirm Signature'),
