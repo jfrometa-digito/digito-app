@@ -3,7 +3,6 @@ import 'package:digito_app/features/sender/presentation/chat_creation/chat_tools
 
 import 'package:digito_app/features/sender/providers/requests_provider.dart';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,18 +17,23 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ChatCreationScreen extends ConsumerStatefulWidget {
   const ChatCreationScreen({super.key});
 
-  static const String systemInstruction =
-      'You are a helpful assistant for creating document signature requests. '
-      'Your workflow must follow these steps strictly:\n'
-      '1. Start by asking the user which flow they want to use: Self-Sign, One-on-One, or Multi-Party. Use the "flowSelector" component for this. '
-      'When the user selects a flow, use the "setRequestType" tool to update the draft.\n'
-      '2. Once a flow is selected, ask the user to upload the document. Use the "fileUploader" component for this.\n'
-      '3. After the file is uploaded, prompt the user to clarify who is signing:\n'
-      '   - If "Self-Sign": Confirm they are the signer.\n'
-      '   - If "One-on-One" or "Multi-Party": Ask if they (the sender) are also signing. If yes, add them as the first recipient using the "addRecipient" tool.\n'
-      '4. Then ask for any other details like additional recipients if needed (for One-on-One/Multi-Party). Use "addRecipient" tool for each one.\n'
-      '5. Finally, show a summary using "draftSummary" and ask to review.\n\n'
-      'Always prefer showing the components (`flowSelector`, `fileUploader`, `recipientList`, `draftSummary`) over asking text-based questions for these tasks.';
+  static const String systemInstruction = '''
+You are the Digito Document Signing Orchestration Agent.
+State source of truth is the draft managed by tools. Always call `getDraftState` first each turn and after handling a userAction event.
+Flows and constraints:
+- selfSign -> minRecipients=1, maxRecipients=1
+- oneOnOne -> minRecipients=2, maxRecipients=2
+- multiParty -> minRecipients=3, maxRecipients=10
+Policy:
+1) If flowType is not set, render `flowSelector` surface. When you receive a userAction `flowSelected`, call `setRequestType` with the given type, then refresh state.
+2) If no document is present (filePath/fileBytes missing), render `fileUploader` surface. When you get `fileUploaded`, refresh state.
+3) After flow + document, collect recipients. Render `recipientManager` with the min/max constraints from state. Do NOT ask for more than max; keep the surface visible until min is satisfied.
+   The recipientManager emits userAction events: `recipientAdded`, `recipientRemoved`, and `recipientCollectionComplete`. After any of these, refresh state.
+4) When recipients satisfy constraints and a file exists, render `draftSummary` with canSend=true. Otherwise set canSend=false and explain what is missing.
+5) When you receive userAction `sendRequest`, call `sendRequest` tool. Show the returned signUrl in a final summary. Do not invent URLs.
+6) Never request or send raw PDF content; only use metadata returned by tools.
+Use short, guiding text plus the provided surfaces. Prefer tool calls over free-form text when changing state.
+''';
 
   @override
   ConsumerState<ChatCreationScreen> createState() => _ChatCreationScreenState();
@@ -51,38 +55,14 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
   void _initializeConversation() {
     final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
     final logger = ref.read(loggerProvider);
-
-    final catalog = createSenderCatalog(
-      onMessageSent: (message) {
-        _textController.text = message;
-        _handleSend();
-      },
-      onUploadPressed: () async {
-        // Trigger file picker
-        final file = await _pickFile();
-        if (file != null) {
-          // Update provider
-          await ref.read(activeDraftProvider.notifier).updateFile(
-                file.path!,
-                file.name,
-                fileBytes: file.bytes,
-              );
-          // Notify AI
-          if (mounted) {
-            _textController.text = "Uploaded ${file.name}";
-            _handleSend();
-          }
-        }
-      },
-    );
-
-    // Watch the active draft notifier to pass to tools
-    final activeDraftNotifier = ref.read(activeDraftProvider.notifier);
+    final catalog = createSenderCatalog();
 
     // Define tools
     final tools = [
-      SetRequestTypeTool(activeDraftNotifier),
-      AddRecipientTool(activeDraftNotifier),
+      SetRequestTypeTool(ref.read(activeDraftProvider.notifier)),
+      AddRecipientTool(ref.read(activeDraftProvider.notifier)),
+      GetDraftStateTool(ref.read(activeDraftProvider.notifier)),
+      SendRequestTool(ref.read(activeDraftProvider.notifier)),
     ];
 
     // Create platform-specific ContentGenerator
@@ -99,12 +79,11 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       // Mobile (iOS/Android): Use Google Generative AI directly (no CORS issues)
       if (apiKey.isEmpty) {
         logger.error(
-            'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key');
+          'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key',
+        );
       }
 
-      generator = GoogleGenerativeAiContentGenerator(
-        apiKey: apiKey,
-        modelName: 'gemini-1.5-flash',
+      generator = FirebaseAiContentGenerator(
         systemInstruction: ChatCreationScreen.systemInstruction,
         catalog: catalog,
         additionalTools: tools,
@@ -116,10 +95,9 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       a2uiMessageProcessor: A2uiMessageProcessor(catalogs: [catalog]),
       onSurfaceAdded: (SurfaceAdded event) {
         setState(() {
-          _bubbles.add(ChatBubbleModel(
-            isUser: false,
-            surfaceId: event.surfaceId,
-          ));
+          _bubbles.add(
+            ChatBubbleModel(isUser: false, surfaceId: event.surfaceId),
+          );
         });
         _scrollToBottom();
       },
@@ -130,20 +108,8 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         _scrollToBottom();
       },
       onError: (error) {
-        logger.error('GenUI conversation error', error);
-        String errorMessage = 'An error occurred. Please try again.';
-
-        if (error.toString().contains('XmlHttpRequest error')) {
-          errorMessage =
-              'Connection failed. Check your API Key permissions and CORS settings.';
-        } else if (error.toString().contains('ContentGeneratorError')) {
-          errorMessage =
-              'The AI model encountered an error generating content. Check API key quota or safety settings.';
-        } else if (apiKey.isEmpty && !kIsWeb) {
-          errorMessage = 'API Key is missing. Please configure GEMINI_API_KEY.';
-        } else {
-          errorMessage = error.toString();
-        }
+        logger.error('GenUI conversation error', error.error.toString());
+        String errorMessage = error.error.toString();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -162,16 +128,6 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
     // Initial greeting
     _conversation.sendRequest(UserMessage([const TextPart('Hello!')]));
-  }
-
-  // ignore: unused_element
-  Future<PlatformFile?> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      withData: true,
-    );
-    return result?.files.singleOrNull;
   }
 
   void _scrollToBottom() {
@@ -252,8 +208,8 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
                         value: (draft?.recipients ?? []).isEmpty
                             ? 'None added'
                             : (draft?.recipients ?? [])
-                                .map((e) => e.email)
-                                .join(', '),
+                                  .map((e) => e.email)
+                                  .join(', '),
                       ),
                     ],
                   ),
@@ -268,10 +224,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
               itemCount: _bubbles.length,
               itemBuilder: (context, index) {
                 final bubble = _bubbles[index];
-                return _MessageBubble(
-                  bubble: bubble,
-                  host: _conversation.host,
-                );
+                return _MessageBubble(bubble: bubble, host: _conversation.host);
               },
             ),
           ),
@@ -280,10 +233,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
               padding: EdgeInsets.all(8.0),
               child: LinearProgressIndicator(),
             ),
-          _ChatInput(
-            controller: _textController,
-            onSend: _handleSend,
-          ),
+          _ChatInput(controller: _textController, onSend: _handleSend),
         ],
       ),
     );
@@ -295,8 +245,11 @@ class _StatusItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const _StatusItem(
-      {required this.icon, required this.label, required this.value});
+  const _StatusItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -306,10 +259,13 @@ class _StatusItem extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
-        Text(label,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurfaceVariant)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -377,10 +333,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             if (bubble.surfaceId != null)
-              GenUiSurface(
-                host: host,
-                surfaceId: bubble.surfaceId!,
-              ),
+              GenUiSurface(host: host, surfaceId: bubble.surfaceId!),
           ],
         ),
       ),
@@ -392,10 +345,7 @@ class _ChatInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
 
-  const _ChatInput({
-    required this.controller,
-    required this.onSend,
-  });
+  const _ChatInput({required this.controller, required this.onSend});
 
   @override
   Widget build(BuildContext context) {

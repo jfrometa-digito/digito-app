@@ -48,12 +48,11 @@ class _SigningScreenState extends ConsumerState<SigningScreen> {
     } else {
       if (apiKey.isEmpty) {
         logger.error(
-            'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key');
+          'GEMINI_API_KEY not found. Please run with --dart-define=GEMINI_API_KEY=your_key',
+        );
       }
 
-      generator = GoogleGenerativeAiContentGenerator(
-        apiKey: apiKey,
-        modelName: 'gemini-1.5-flash',
+      generator = FirebaseAiContentGenerator(
         systemInstruction: systemInstruction,
         catalog: signingCatalog,
       );
@@ -61,37 +60,35 @@ class _SigningScreenState extends ConsumerState<SigningScreen> {
 
     _conversation = genui.GenUiConversation(
       contentGenerator: generator,
-      a2uiMessageProcessor:
-          genui.A2uiMessageProcessor(catalogs: [signingCatalog]),
+      a2uiMessageProcessor: genui.A2uiMessageProcessor(
+        catalogs: [signingCatalog],
+      ),
       onSurfaceAdded: (genui.SurfaceAdded event) {
         setState(() {
-          _bubbles.add(ChatBubbleModel(
-            isUser: false,
-            surfaceId: event.surfaceId,
-          ));
+          _bubbles.add(
+            ChatBubbleModel(isUser: false, surfaceId: event.surfaceId),
+          );
         });
         _scrollToBottom();
       },
       onTextResponse: (text) {
         setState(() {
-          _bubbles.add(ChatBubbleModel(
-            isUser: false,
-            text: text,
-          ));
+          _bubbles.add(ChatBubbleModel(isUser: false, text: text));
         });
         _scrollToBottom();
       },
       onError: (error) {
         logger.error('GenUI signing conversation error', error);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $error')));
       },
     );
 
     // Initial greeting
-    _conversation.sendRequest(genui.UserMessage(
-        [const genui.TextPart('Hello! I am ready to sign.')]));
+    _conversation.sendRequest(
+      genui.UserMessage([const genui.TextPart('Hello! I am ready to sign.')]),
+    );
   }
 
   void _scrollToBottom() {
@@ -153,10 +150,7 @@ class _SigningScreenState extends ConsumerState<SigningScreen> {
               itemCount: _bubbles.length,
               itemBuilder: (context, index) {
                 final bubble = _bubbles[index];
-                return _MessageBubble(
-                  bubble: bubble,
-                  host: _conversation.host,
-                );
+                return _MessageBubble(bubble: bubble, host: _conversation.host);
               },
             ),
           ),
@@ -165,10 +159,7 @@ class _SigningScreenState extends ConsumerState<SigningScreen> {
               padding: EdgeInsets.all(8.0),
               child: LinearProgressIndicator(),
             ),
-          _ChatInput(
-            controller: _textController,
-            onSend: _handleSend,
-          ),
+          _ChatInput(controller: _textController, onSend: _handleSend),
         ],
       ),
     );
@@ -205,8 +196,9 @@ class _MessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: isUser
               ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.5),
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -227,10 +219,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             if (bubble.surfaceId != null)
-              genui.GenUiSurface(
-                host: host,
-                surfaceId: bubble.surfaceId!,
-              ),
+              genui.GenUiSurface(host: host, surfaceId: bubble.surfaceId!),
           ],
         ),
       ),
@@ -242,10 +231,7 @@ class _ChatInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
 
-  const _ChatInput({
-    required this.controller,
-    required this.onSend,
-  });
+  const _ChatInput({required this.controller, required this.onSend});
 
   @override
   Widget build(BuildContext context) {

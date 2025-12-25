@@ -12,7 +12,7 @@
             ],
             "toolArgs": [
                 "--dart-define",
-                "GEMINI_API_KEY=YOUR_VALID_API_KEY_HERE"
+                "GEMINI_API_KEY=AIzaSyBnzYLRwYUoq4eRLb2srntBJVvj3WkxGkY"
             ]
         },
         {

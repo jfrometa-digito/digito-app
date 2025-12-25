@@ -97,6 +97,8 @@ class ActiveDraft extends _$ActiveDraft {
     return null;
   }
 
+  SignatureRequest? get current => state;
+
   // Helper to sync draft to main requests list & repository
   Future<void> _persist(SignatureRequest draft) async {
     // Only persist if there's something meaningful (at least a file or a recipient)
