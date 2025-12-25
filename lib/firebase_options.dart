@@ -73,3 +73,5 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.digitoApp',
   );
 }
+
+//flutter run -d 9DDB193F-00DE-4358-87DA-C212867B60AB
