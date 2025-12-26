@@ -1,0 +1,109 @@
+{
+    "@@locale": "en",
+    "dashboardTitle": "SignBot Assistant",
+    "dashboardSubtitle": "Your document signing companion",
+    "dashboardPoweredBy": "Powered by DocSecure",
+    "tabDrafting": "Drafting",
+    "tabSigning": "Signing",
+    "tabArchiving": "Archiving",
+    "cardSelfSignTitle": "Self-Sign Document",
+    "cardSelfSignSubtitle": "Sign a document just for yourself",
+    "cardOneOnOneTitle": "1-on-1 Signing",
+    "cardOneOnOneSubtitle": "Send to one other person",
+    "cardMultiPartyTitle": "Multiparty Flow",
+    "cardMultiPartySubtitle": "Sequential signing for teams",
+    "promptInputPlaceholder": "Ask me to draft a contract..",
+    "menuProfile": "Profile",
+    "menuToggleTheme": "Toggle Theme",
+    "menuLogOut": "Log Out",
+    "menuLanguage": "Language",
+
+    "chatGreeting": "Hello! I can help you create a new signature request.",
+    "chatWelcomeBack": "Welcome back! 👋 How can I assist you with your documents today?",
+    "chatRequestType": "I need to {type} a new contract.",
+    "@chatRequestType": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "chatUploadPrompt": "Got it. Let's get that signed. Please upload the document you want to work on. I support PDF and DOCX files.",
+    "chatStartedRequest": "I've started a **{type}** request for you. Please upload the PDF document you'd like to use.",
+    "@chatStartedRequest": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "chatFileUploaded": "File uploaded",
+    "chatRecipientsPrompt": "Great! I've prepared the document. Who needs to sign it? Please add their details below.",
+    "chatManageRecipients": "Please manage the recipients for this request.",
+    "chatRecipientsSet": "Recipients are set.",
+    "chatSummaryPrompt": "Perfect. Here is the summary of your request. If everything looks good, you can send it.",
+    "chatSendRequest": "Send Request",
+    "chatLinkGenerated": "Great job! I've generated the signing link for '{title}'.",
+    "@chatLinkGenerated": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "chatSendErrorLink": "Your request has been sent, but I could not generate a link.",
+    "errorLaunchUrl": "Could not launch signing URL",
+
+    "uploadDocumentTitle": "UPLOAD DOCUMENT",
+    "uploadBrowse": "Tap to browse",
+    "uploadDrag": "or drag file here",
+    "btnNextStep": "Next Step",
+    "sourceFiles": "Files",
+    "sourceScan": "Scan",
+    "sourceDrive": "Drive",
+
+    "recipientsTitle": "CURRENT RECIPIENTS",
+    "recipientsAdded": "Added",
+    "recipientsEmpty": "No recipients added yet.",
+    "recipientsAddNew": "Add New Person",
+    "labelFullName": "Full Name",
+    "labelEmail": "Email Address",
+    "btnAddToList": "Add to List",
+    "btnAddMyself": "Add myself",
+    "btnContinue": "Continue",
+    "errorInvalidRecipient": "Enter a valid name and email",
+    "errorFillAllFields": "Please fill all recipient fields",
+    "errorSelfSignCount": "Self signing must have exactly 1 signer.",
+    "errorOneOnOneCount": "1-on-1 requires exactly 2 signers.",
+
+    "summaryTitle": "Draft Summary",
+    "summaryFile": "File",
+    "summaryRecipients": "Recipients",
+    "summaryStatus": "Status",
+    "summarySignUrl": "Sign URL",
+    "btnSendForSigning": "Send for signing",
+
+    "signingLinkTitle": "READY TO SIGN",
+    "signingLinkGenerated": "Signing Link Generated",
+    "signingLinkShare": "Share this link with",
+    "btnCopyLink": "Copy Link",
+    "toastLinkCopied": "Link copied to clipboard",
+    "btnSendEmail": "Send via Email",
+    "btnCloseStartNew": "Close & Start New",
+
+    "flowCurrent": "Current Flow",
+    "checkboxAmSigner": "I am one of the signers",
+    "checkboxAutoFill": "Auto-fill my account details",
+    "checkboxLoading": "Loading profile...",
+    "btnAddAnother": "Add Another Recipient",
+    "btnNextPlaceFields": "Next: Place Fields",
+    "labelYourInfo": "Your Information",
+    "labelRecipientN": "Recipient {n}",
+    "@labelRecipientN": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    }
+}

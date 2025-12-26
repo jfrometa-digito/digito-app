@@ -1,4 +1,5 @@
 import 'package:digito_app/domain/models/signature_request.dart';
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:digito_app/features/sender/presentation/chat_creation/sender_catalog.dart';
 import 'package:digito_app/features/sender/providers/requests_provider.dart';
@@ -38,7 +39,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text: 'Hello! I can help you create a new signature request.',
+          text: AppLocalizations.of(context)!.chatGreeting,
         ),
       );
     });
@@ -75,8 +76,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text:
-              'Welcome back! 👋 How can I assist you with your documents today?',
+          text: AppLocalizations.of(context)!.chatWelcomeBack,
         ),
       );
       _bubbles.add(
@@ -94,14 +94,13 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: true,
-          text: 'I need to ${type.name} a new contract.',
+          text: AppLocalizations.of(context)!.chatRequestType(type.name),
         ),
       );
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text:
-              'Got it. Let\'s get that signed. Please upload the document you want to work on. I support PDF and DOCX files.',
+          text: AppLocalizations.of(context)!.chatUploadPrompt,
         ),
       );
       _bubbles.add(
@@ -119,8 +118,9 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text:
-              'I\'ve started a **${type.name.replaceAll(RegExp(r'(?<!^)(?=[A-Z])'), ' ')}** request for you. Please upload the PDF document you\'d like to use.',
+          text: AppLocalizations.of(context)!.chatStartedRequest(
+            type.name.replaceAll(RegExp(r'(?<!^)(?=[A-Z])'), ' '),
+          ),
         ),
       );
       _bubbles.add(
@@ -135,12 +135,16 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   void _handleFileUploaded() {
     setState(() {
-      _bubbles.add(ChatBubbleModel(isUser: true, text: 'File uploaded'));
+      _bubbles.add(
+        ChatBubbleModel(
+          isUser: true,
+          text: AppLocalizations.of(context)!.chatFileUploaded,
+        ),
+      );
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text:
-              'Great! I\'ve prepared the document. Who needs to sign it? Please add their details below.',
+          text: AppLocalizations.of(context)!.chatRecipientsPrompt,
         ),
       );
       _bubbles.add(
@@ -160,7 +164,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text: 'Please manage the recipients for this request.',
+          text: AppLocalizations.of(context)!.chatManageRecipients,
         ),
       );
       _bubbles.add(
@@ -177,12 +181,16 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   void _handleRecipientsComplete() {
     setState(() {
-      _bubbles.add(ChatBubbleModel(isUser: true, text: 'Recipients are set.'));
+      _bubbles.add(
+        ChatBubbleModel(
+          isUser: true,
+          text: AppLocalizations.of(context)!.chatRecipientsSet,
+        ),
+      );
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text:
-              'Perfect. Here is the summary of your request. If everything looks good, you can send it.',
+          text: AppLocalizations.of(context)!.chatSummaryPrompt,
         ),
       );
       _bubbles.add(
@@ -225,14 +233,20 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
     final signUrl = sentDraft?.signUrl;
 
     setState(() {
-      _bubbles.add(ChatBubbleModel(isUser: true, text: 'Send Request'));
+      _bubbles.add(
+        ChatBubbleModel(
+          isUser: true,
+          text: AppLocalizations.of(context)!.chatSendRequest,
+        ),
+      );
 
       if (signUrl != null) {
         _bubbles.add(
           ChatBubbleModel(
             isUser: false,
-            text:
-                'Great job! I\'ve generated the signing link for \'${sentDraft?.title ?? "Document"}\'.',
+            text: AppLocalizations.of(
+              context,
+            )!.chatLinkGenerated(sentDraft?.title ?? "Document"),
           ),
         );
         _bubbles.add(
@@ -249,8 +263,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         _bubbles.add(
           ChatBubbleModel(
             isUser: false,
-            text:
-                'Your request has been sent, but I could not generate a link.',
+            text: AppLocalizations.of(context)!.chatSendErrorLink,
           ),
         );
       }
@@ -265,7 +278,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch signing URL')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorLaunchUrl)),
         );
       }
     }
@@ -303,7 +316,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         title: Column(
           children: [
             Text(
-              'SignBot Assistant',
+              AppLocalizations.of(context)!.dashboardTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -350,13 +363,15 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      "SignBot",
+                      AppLocalizations.of(
+                        context,
+                      )!.dashboardTitle.split(' ')[0],
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      "Your document signing companion",
+                      AppLocalizations.of(context)!.dashboardSubtitle,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),

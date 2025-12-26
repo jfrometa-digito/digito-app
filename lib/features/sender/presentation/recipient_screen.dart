@@ -1,3 +1,4 @@
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -185,9 +186,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (user == null && value) {
       // If user is null but they tried to check it, show a message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User profile not loaded. Please try again.'),
-        ),
+        SnackBar(content: Text(AppLocalizations.of(context)!.checkboxLoading)),
       );
       setState(() => _includeMyself = false);
     }
@@ -225,7 +224,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     if (!isFilled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all recipient fields')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorFillAllFields),
+        ),
       );
       return;
     }
@@ -236,8 +237,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     if (type == SignatureRequestType.selfSign && count != 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Self signing must have exactly 1 signer.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorSelfSignCount),
         ),
       );
       return;
@@ -245,7 +246,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     if (type == SignatureRequestType.oneOnOne && count != 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('1-on-1 requires exactly 2 signers.')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorOneOnOneCount),
+        ),
       );
       return;
     }
@@ -300,7 +303,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current Flow',
+                  AppLocalizations.of(context)!.flowCurrent,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -327,11 +330,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                   child: CheckboxListTile(
                     value: _includeMyself,
                     onChanged: user == null ? null : _onIncludeMyselfToggled,
-                    title: const Text('I am one of the signers'),
+                    title: Text(AppLocalizations.of(context)!.checkboxAmSigner),
                     subtitle: Text(
                       user == null
-                          ? 'Loading profile...'
-                          : 'Auto-fill my account details',
+                          ? AppLocalizations.of(context)!.checkboxLoading
+                          : AppLocalizations.of(context)!.checkboxAutoFill,
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurfaceVariant,
@@ -371,7 +374,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                   OutlinedButton.icon(
                     onPressed: () => _addRecipientRow(),
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Another Recipient'),
+                    label: Text(AppLocalizations.of(context)!.btnAddAnother),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                     ),
@@ -379,7 +382,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _onNext,
-                  child: const Text('Next: Place Fields'),
+                  child: Text(AppLocalizations.of(context)!.btnNextPlaceFields),
                 ),
               ],
             ),
@@ -392,11 +395,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   String _getFlowTitle(SignatureRequestType type) {
     switch (type) {
       case SignatureRequestType.selfSign:
-        return 'Sign Myself';
+        return AppLocalizations.of(context)!.cardSelfSignTitle;
       case SignatureRequestType.oneOnOne:
-        return '1-on-1 Signature';
+        return AppLocalizations.of(context)!.cardOneOnOneTitle;
       case SignatureRequestType.multiParty:
-        return 'Add Recipients';
+        return AppLocalizations.of(context)!.cardMultiPartyTitle;
     }
   }
 
@@ -431,7 +434,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                isSelfSign ? 'Your Information' : 'Recipient ${index + 1}',
+                isSelfSign
+                    ? AppLocalizations.of(context)!.labelYourInfo
+                    : AppLocalizations.of(context)!.labelRecipientN(index + 1),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -447,17 +452,17 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _nameControllers[index],
-            decoration: const InputDecoration(
-              labelText: 'Full Name',
-              prefixIcon: Icon(Icons.person),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.labelFullName,
+              prefixIcon: const Icon(Icons.person),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _emailControllers[index],
-            decoration: const InputDecoration(
-              labelText: 'Email Address',
-              prefixIcon: Icon(Icons.email),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.labelEmail,
+              prefixIcon: const Icon(Icons.email),
             ),
           ),
         ],

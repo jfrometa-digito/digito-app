@@ -1,3 +1,4 @@
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 // --- Header ---
@@ -28,7 +29,7 @@ class DashboardHeader extends StatelessWidget implements PreferredSizeWidget {
         tooltip: 'Profile',
       ),
       title: Text(
-        'SignBot Assistant',
+        AppLocalizations.of(context)!.dashboardTitle,
         style: theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w700,
           color: theme.colorScheme.onSurface,
@@ -79,7 +80,9 @@ class DashboardHero extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'SignBot',
+          AppLocalizations.of(
+            context,
+          )!.dashboardTitle.split(' ')[0], // SignBot or localized name
           style: theme.textTheme.headlineLarge?.copyWith(
             fontWeight: FontWeight.w800,
             color: theme.colorScheme.onSurface,
@@ -87,7 +90,7 @@ class DashboardHero extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Your document signing companion',
+          AppLocalizations.of(context)!.dashboardSubtitle,
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -106,7 +109,7 @@ class DashboardHero extends StatelessWidget {
               Icon(Icons.verified, size: 16, color: theme.colorScheme.primary),
               const SizedBox(width: 6),
               Text(
-                'Powered by Digito',
+                AppLocalizations.of(context)!.dashboardPoweredBy,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -143,9 +146,9 @@ class SegmentedTabSelector extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _buildTab(context, 'Drafting', 0),
-          _buildTab(context, 'Signing', 1),
-          _buildTab(context, 'Archiving', 2),
+          _buildTab(context, AppLocalizations.of(context)!.tabDrafting, 0),
+          _buildTab(context, AppLocalizations.of(context)!.tabSigning, 1),
+          _buildTab(context, AppLocalizations.of(context)!.tabArchiving, 2),
         ],
       ),
     );
@@ -319,7 +322,7 @@ class PromptInputBar extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Ask me to draft a contract..',
+                        AppLocalizations.of(context)!.promptInputPlaceholder,
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

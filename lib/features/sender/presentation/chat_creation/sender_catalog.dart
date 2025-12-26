@@ -2,6 +2,7 @@ import 'package:digito_app/core/providers/auth_provider.dart';
 import 'package:digito_app/domain/models/recipient.dart';
 import 'package:digito_app/domain/models/signature_request.dart';
 import 'package:digito_app/features/sender/providers/requests_provider.dart';
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,24 +23,24 @@ class FlowSelectorWidget extends ConsumerWidget {
         _buildOptionCard(
           context,
           icon: Icons.edit_document,
-          title: 'Self-Sign Document',
-          subtitle: 'Sign a document just for yourself',
+          title: AppLocalizations.of(context)!.cardSelfSignTitle,
+          subtitle: AppLocalizations.of(context)!.cardSelfSignSubtitle,
           onTap: () => _handleSelect(ref, SignatureRequestType.selfSign),
         ),
         const SizedBox(height: 12),
         _buildOptionCard(
           context,
           icon: Icons.people_alt,
-          title: '1-on-1 Signing',
-          subtitle: 'Send to one other person',
+          title: AppLocalizations.of(context)!.cardOneOnOneTitle,
+          subtitle: AppLocalizations.of(context)!.cardOneOnOneSubtitle,
           onTap: () => _handleSelect(ref, SignatureRequestType.oneOnOne),
         ),
         const SizedBox(height: 12),
         _buildOptionCard(
           context,
           icon: Icons.groups,
-          title: 'Multiparty Flow',
-          subtitle: 'Sequential signing for teams',
+          title: AppLocalizations.of(context)!.cardMultiPartyTitle,
+          subtitle: AppLocalizations.of(context)!.cardMultiPartySubtitle,
           onTap: () => _handleSelect(ref, SignatureRequestType.multiParty),
         ),
       ],
@@ -151,7 +152,7 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'UPLOAD DOCUMENT',
+              AppLocalizations.of(context)!.uploadDocumentTitle,
               style: theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
@@ -195,14 +196,14 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          "Tap to browse",
+                          AppLocalizations.of(context)!.uploadBrowse,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "or drag file here",
+                          AppLocalizations.of(context)!.uploadDrag,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -250,18 +251,18 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Next Step",
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.btnNextStep,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward),
                     ],
                   ),
                 ),
@@ -271,13 +272,21 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildSourceOption(context, Icons.folder_open, "Files"),
+                  _buildSourceOption(
+                    context,
+                    Icons.folder_open,
+                    AppLocalizations.of(context)!.sourceFiles,
+                  ),
                   _buildSourceOption(
                     context,
                     Icons.document_scanner_outlined,
-                    "Scan",
+                    AppLocalizations.of(context)!.sourceScan,
                   ),
-                  _buildSourceOption(context, Icons.add_to_drive, "Drive"),
+                  _buildSourceOption(
+                    context,
+                    Icons.add_to_drive,
+                    AppLocalizations.of(context)!.sourceDrive,
+                  ),
                 ],
               ),
             ],
@@ -404,7 +413,7 @@ class _RecipientManagerWidgetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'CURRENT RECIPIENTS',
+                      AppLocalizations.of(context)!.recipientsTitle,
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
@@ -423,7 +432,7 @@ class _RecipientManagerWidgetState
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    "$count Added",
+                    "$count ${AppLocalizations.of(context)!.recipientsAdded}",
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onPrimaryContainer,
                       fontWeight: FontWeight.bold,
@@ -437,7 +446,7 @@ class _RecipientManagerWidgetState
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
-                  "No recipients added yet.",
+                  AppLocalizations.of(context)!.recipientsEmpty,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontStyle: FontStyle.italic,
                     color: theme.colorScheme.onSurfaceVariant,
@@ -496,7 +505,7 @@ class _RecipientManagerWidgetState
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    "Add New Person",
+                    AppLocalizations.of(context)!.recipientsAddNew,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -505,7 +514,7 @@ class _RecipientManagerWidgetState
               ),
               const SizedBox(height: 16),
               Text(
-                "Full Name",
+                AppLocalizations.of(context)!.labelFullName,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
@@ -529,7 +538,7 @@ class _RecipientManagerWidgetState
               ),
               const SizedBox(height: 16),
               Text(
-                "Email Address",
+                AppLocalizations.of(context)!.labelEmail,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
@@ -561,14 +570,14 @@ class _RecipientManagerWidgetState
                     ),
                   ),
                   icon: const Icon(Icons.add),
-                  label: const Text('Add to List'),
+                  label: Text(AppLocalizations.of(context)!.btnAddToList),
                 ),
               ),
               // Quick add myself link
               Center(
                 child: TextButton(
                   onPressed: _prefillCurrentUser,
-                  child: const Text("Add myself"),
+                  child: Text(AppLocalizations.of(context)!.btnAddMyself),
                 ),
               ),
             ],
@@ -623,7 +632,9 @@ class _RecipientManagerWidgetState
     final email = _emailCtrl.text.trim();
     if (name.isEmpty || email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid name and email')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorInvalidRecipient),
+        ),
       );
       return;
     }
@@ -692,7 +703,7 @@ class DraftSummaryWidget extends StatelessWidget {
                 Icon(Icons.assignment, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Draft Summary',
+                  AppLocalizations.of(context)!.summaryTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -712,14 +723,34 @@ class DraftSummaryWidget extends StatelessWidget {
             ),
             Divider(color: theme.colorScheme.outlineVariant),
             const SizedBox(height: 16),
-            _buildRow(context, Icons.description, 'File', fileName),
+            _buildRow(
+              context,
+              Icons.description,
+              AppLocalizations.of(context)!.summaryFile,
+              fileName,
+            ),
             const SizedBox(height: 12),
-            _buildRow(context, Icons.people, 'Recipients', '$recipientCount'),
+            _buildRow(
+              context,
+              Icons.people,
+              AppLocalizations.of(context)!.summaryRecipients,
+              '$recipientCount',
+            ),
             const SizedBox(height: 12),
-            _buildRow(context, Icons.info_outline, 'Status', status),
+            _buildRow(
+              context,
+              Icons.info_outline,
+              AppLocalizations.of(context)!.summaryStatus,
+              status,
+            ),
             if (signUrl != null) ...[
               const SizedBox(height: 12),
-              _buildRow(context, Icons.link, 'Sign URL', signUrl!),
+              _buildRow(
+                context,
+                Icons.link,
+                AppLocalizations.of(context)!.summarySignUrl,
+                signUrl!,
+              ),
             ],
             const SizedBox(height: 24),
             SizedBox(
@@ -728,7 +759,7 @@ class DraftSummaryWidget extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: canSend ? onSend : null,
                 icon: const Icon(Icons.send),
-                label: const Text('Send for signing'),
+                label: Text(AppLocalizations.of(context)!.btnSendForSigning),
                 style: FilledButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: theme.colorScheme.onPrimary,

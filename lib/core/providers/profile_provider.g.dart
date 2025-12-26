@@ -41,7 +41,7 @@ final class ProfileStateProvider
   }
 }
 
-String _$profileStateHash() => r'7c97a01fb5bdfb9aa8bdddc04dd38a3d6a3e48c4';
+String _$profileStateHash() => r'19862d1b9fd74b26e81cd1ee0ea5dacd00652deb';
 
 abstract class _$ProfileState extends $Notifier<AsyncValue<UserProfile?>> {
   AsyncValue<UserProfile?> build();

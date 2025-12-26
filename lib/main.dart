@@ -1,3 +1,4 @@
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,8 @@ import 'core/providers/logger_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/widgets/error_boundary.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/providers/locale_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +50,7 @@ class DigitoApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(appThemeModeProvider);
+    final locale = ref.watch(appLocaleProvider);
 
     return GlobalErrorHandler(
       child: MaterialApp.router(
@@ -56,6 +60,14 @@ class DigitoApp extends ConsumerWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: themeMode,
         routerConfig: router,
+        locale: locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en'), Locale('es')],
         builder: (context, child) {
           return child ?? const SizedBox.shrink();
         },

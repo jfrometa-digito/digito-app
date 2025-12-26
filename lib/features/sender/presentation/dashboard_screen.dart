@@ -1,3 +1,4 @@
+import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../providers/requests_provider.dart';
 import 'widgets/dashboard_widgets.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -80,10 +82,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildDraftingView() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return SliverList(
       delegate: SliverChildListDelegate([
         Text(
-          "Let's get your documents signed.",
+          l10n.dashboardSubtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -91,8 +94,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         const SizedBox(height: 24),
         DashboardOptionCard(
-          title: 'Self-Sign Document',
-          subtitle: 'Sign a document just for yourself',
+          title: l10n.cardSelfSignTitle,
+          subtitle: l10n.cardSelfSignSubtitle,
           icon: Icons.edit_note,
           iconBgColor: const Color(0xFFE8F0FE), // Light blue
           iconColor: const Color(0xFF1967D2), // Google Blue
@@ -102,8 +105,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           },
         ),
         DashboardOptionCard(
-          title: '1-on-1 Signing',
-          subtitle: 'Send to one other person',
+          title: l10n.cardOneOnOneTitle,
+          subtitle: l10n.cardOneOnOneSubtitle,
           icon: Icons.people_outline,
           iconBgColor: const Color(0xFFF3E8FD), // Light purple
           iconColor: const Color(0xFF9334E6), // Purple
@@ -113,8 +116,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           },
         ),
         DashboardOptionCard(
-          title: 'Multiparty Flow',
-          subtitle: 'Sequential signing for teams',
+          title: l10n.cardMultiPartyTitle,
+          subtitle: l10n.cardMultiPartySubtitle,
           icon: Icons.groups_outlined,
           iconBgColor: const Color(0xFFE6F4EA), // Light green
           iconColor: const Color(0xFF137333), // Green
@@ -227,11 +230,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
       if (!context.mounted) return;
 
-      if (!isAuth) {
-        context.pushNamed('login');
-        return;
-      }
-
       showModalBottomSheet(
         context: context,
         builder: (ctx) => SafeArea(
@@ -240,38 +238,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.person),
-                title: const Text('Profile'),
+                title: Text(AppLocalizations.of(context)!.menuProfile),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.pushNamed('profile');
+                  if (isAuth) {
+                    context.pushNamed('profile');
+                  } else {
+                    context.pushNamed('login');
+                  }
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.brightness_6),
-                title: const Text('Toggle Theme'),
+                title: Text(AppLocalizations.of(context)!.menuToggleTheme),
                 onTap: () {
                   ref.read(appThemeModeProvider.notifier).toggle();
                   Navigator.pop(ctx);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout),
-                title: const Text('Log Out'),
-                onTap: () async {
+                leading: const Icon(Icons.language),
+                title: Text(AppLocalizations.of(context)!.menuLanguage),
+                trailing: Text(
+                  ref.read(appLocaleProvider).languageCode.toUpperCase(),
+                ),
+                onTap: () {
+                  ref.read(appLocaleProvider.notifier).toggle();
                   Navigator.pop(ctx);
-                  final authService = ref.read(authServiceProvider);
-                  await authService.logout();
-                  ref.invalidate(currentUserProvider);
-                  ref.invalidate(isAuthenticatedProvider);
                 },
               ),
+              if (isAuth)
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: Text(AppLocalizations.of(context)!.menuLogOut),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final authService = ref.read(authServiceProvider);
+                    await authService.logout();
+                    ref.invalidate(currentUserProvider);
+                    ref.invalidate(isAuthenticatedProvider);
+                  },
+                )
+              else
+                ListTile(
+                  leading: const Icon(Icons.login),
+                  title: const Text('Log In'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.pushNamed('login');
+                  },
+                ),
             ],
           ),
         ),
       );
     } catch (e) {
       if (context.mounted) {
-        context.pushNamed('login');
+        // Safe fallback
       }
     }
   }

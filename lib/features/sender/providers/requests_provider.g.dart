@@ -81,7 +81,7 @@ final class RequestsProvider
   Requests create() => Requests();
 }
 
-String _$requestsHash() => r'17493033d085e23609de22e5cb698d6f7b15426d';
+String _$requestsHash() => r'447ab90838ac6d62dd3a94a1e1ef20d08a82b5ea';
 
 abstract class _$Requests extends $AsyncNotifier<List<SignatureRequest>> {
   FutureOr<List<SignatureRequest>> build();
@@ -290,7 +290,7 @@ final class ActiveDraftProvider
   }
 }
 
-String _$activeDraftHash() => r'de05a7ec554760ea2756c6d569bd09b97327984f';
+String _$activeDraftHash() => r'e300a4a6abe3c73dc9de3310332ff6bc750db49a';
 
 abstract class _$ActiveDraft extends $Notifier<SignatureRequest?> {
   SignatureRequest? build();
