@@ -18,9 +18,7 @@ void main() async {
 
   // Initialize Firebase for web platform (required for Firebase AI)
   // if (kIsWeb) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // }
 
   final container = ProviderContainer();
@@ -38,10 +36,7 @@ void main() async {
   };
 
   runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const DigitoApp(),
-    ),
+    UncontrolledProviderScope(container: container, child: const DigitoApp()),
   );
 }
 
@@ -61,6 +56,9 @@ class DigitoApp extends ConsumerWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: themeMode,
         routerConfig: router,
+        builder: (context, child) {
+          return child ?? const SizedBox.shrink();
+        },
       ),
     );
   }

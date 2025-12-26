@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart' as genui;
-import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:genui_firebase_ai/genui_firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;

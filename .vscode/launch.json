@@ -10,10 +10,6 @@
                 "--web-port",
                 "3000"
             ],
-            "toolArgs": [
-                "--dart-define",
-                "GEMINI_API_KEY=AIzaSyBnzYLRwYUoq4eRLb2srntBJVvj3WkxGkY"
-            ]
         },
         {
             "name": "digito_app (Profile)",

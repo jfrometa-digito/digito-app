@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genui/genui.dart';
 
 // Platform-specific imports
-import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:genui_firebase_ai/genui_firebase_ai.dart';
 import 'package:digito_app/core/providers/logger_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -126,8 +125,10 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       },
     );
 
-    // Initial greeting
-    _conversation.sendRequest(UserMessage([const TextPart('Hello!')]));
+    // Initial greeting - only send if we don't have bubbles yet
+    if (_bubbles.isEmpty) {
+      _conversation.sendRequest(UserMessage([const TextPart('Hello!')]));
+    }
   }
 
   void _scrollToBottom() {
