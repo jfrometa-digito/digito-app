@@ -1,4 +1,5 @@
 import 'package:digito_app/domain/models/signature_request.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:digito_app/features/sender/presentation/chat_creation/sender_catalog.dart';
 import 'package:digito_app/features/sender/providers/requests_provider.dart';
 import 'package:flutter/material.dart';
@@ -217,21 +218,54 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   Future<void> _handleSend() async {
     await ref.read(activeDraftProvider.notifier).markAsSent();
+
+    final sentDraft = ref.read(activeDraftProvider);
+    final signUrl = sentDraft?.signUrl;
+
     setState(() {
       _bubbles.add(ChatBubbleModel(isUser: true, text: 'Send Request'));
-      _bubbles.add(
-        ChatBubbleModel(
-          isUser: false,
-          text:
-              'Your request has been sent! You can copy the link from the summary above.',
-        ),
-      );
-      // Refresh summary to show link
-      _bubbles.add(
-        ChatBubbleModel(isUser: false, content: _buildSummaryWidget()),
-      );
+
+      if (signUrl != null) {
+        _bubbles.add(
+          ChatBubbleModel(
+            isUser: false,
+            text: 'Your request has been sent successfully!',
+          ),
+        );
+        _bubbles.add(
+          ChatBubbleModel(
+            isUser: false,
+            content: SigningLinkWidget(
+              signUrl: signUrl,
+              onOpenLink: () => _launchSignUrl(signUrl),
+              onReset: _reset,
+            ),
+          ),
+        );
+      } else {
+        _bubbles.add(
+          ChatBubbleModel(
+            isUser: false,
+            text:
+                'Your request has been sent, but I could not generate a link.',
+          ),
+        );
+      }
     });
     _scrollToBottom();
+  }
+
+  Future<void> _launchSignUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch signing URL')),
+        );
+      }
+    }
   }
 
   void _scrollToBottom() {
@@ -257,8 +291,6 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Request Assistant'),

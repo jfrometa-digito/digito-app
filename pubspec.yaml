@@ -49,6 +49,7 @@ dependencies:
   genui_firebase_ai: ^0.6.0
   firebase_core: ^4.3.0
   flutter_dotenv: ^6.0.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

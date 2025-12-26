@@ -403,8 +403,80 @@ class DraftSummaryWidget extends StatelessWidget {
         const SizedBox(width: 8),
         Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(width: 8),
-        Expanded(child: Text(value)),
+        Expanded(child: SelectableText(value)),
       ],
+    );
+  }
+}
+
+class SigningLinkWidget extends StatelessWidget {
+  final String signUrl;
+  final VoidCallback onOpenLink;
+  final VoidCallback? onReset;
+
+  const SigningLinkWidget({
+    super.key,
+    required this.signUrl,
+    required this.onOpenLink,
+    this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'Ready to Sign!',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text('You can start the signing process now.'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: SelectableText(
+                signUrl,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onOpenLink,
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Open Signing Page'),
+              ),
+            ),
+            if (onReset != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: onReset,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Close & Start New'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
