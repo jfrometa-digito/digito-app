@@ -5,6 +5,7 @@ import 'package:digito_app/features/sender/providers/requests_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:digito_app/features/sender/presentation/chat_creation/_dashed_border_painter.dart';
 
 // Standalone Widgets for Guided Chat Flow
 
@@ -15,40 +16,94 @@ class FlowSelectorWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildOptionCard(
+          context,
+          icon: Icons.edit_document,
+          title: 'Self-Sign Document',
+          subtitle: 'Sign a document just for yourself',
+          onTap: () => _handleSelect(ref, SignatureRequestType.selfSign),
+        ),
+        const SizedBox(height: 12),
+        _buildOptionCard(
+          context,
+          icon: Icons.people_alt,
+          title: '1-on-1 Signing',
+          subtitle: 'Send to one other person',
+          onTap: () => _handleSelect(ref, SignatureRequestType.oneOnOne),
+        ),
+        const SizedBox(height: 12),
+        _buildOptionCard(
+          context,
+          icon: Icons.groups,
+          title: 'Multiparty Flow',
+          subtitle: 'Sequential signing for teams',
+          onTap: () => _handleSelect(ref, SignatureRequestType.multiParty),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptionCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
     return Card(
-      elevation: 2,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              'Select a Workflow',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      color: theme.colorScheme.surface,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
           ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Sign Yourself'),
-            subtitle: const Text('You are the only signer'),
-            leading: const Icon(Icons.person),
-            onTap: () => _handleSelect(ref, SignatureRequestType.selfSign),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('One-on-One'),
-            subtitle: const Text('Send to one person'),
-            leading: const Icon(Icons.person_outline),
-            onTap: () => _handleSelect(ref, SignatureRequestType.oneOnOne),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Multi-Party'),
-            subtitle: const Text('Send to multiple people'),
-            leading: const Icon(Icons.people),
-            onTap: () => _handleSelect(ref, SignatureRequestType.multiParty),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -73,6 +128,7 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final draft = ref.watch(activeDraftProvider);
     final currentFileName =
         (draft?.title != null && draft!.title != 'Untitled Document')
@@ -83,52 +139,179 @@ class _FileUploaderWidgetState extends ConsumerState<FileUploaderWidget> {
         (draft?.filePath?.isNotEmpty ?? false) || draft?.fileBytes != null;
 
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      color: theme.colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                const Icon(Icons.cloud_upload),
-                const SizedBox(width: 8),
-                Text(
-                  currentFileName ?? 'Upload a PDF',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                if (_isLoading)
-                  const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+            Text(
+              'UPLOAD DOCUMENT',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _isLoading ? null : _pickFile,
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.transparent, // Handled by CustomPaint
+                    style: BorderStyle.none,
                   ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _isLoading ? null : _pickFile,
-              icon: const Icon(Icons.upload_file),
-              label: Text(_isLoading ? 'Uploading...' : 'Choose PDF'),
-            ),
-            if (currentFileName != null && hasFile) ...[
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  'Selected: $currentFileName',
-                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                child: CustomPaint(
+                  painter: DashedBorderPainter(
+                    color: theme.colorScheme.outlineVariant,
+                    strokeWidth: 2,
+                    gap: 5,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 32,
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Tap to browse",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "or drag file here",
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              FilledButton.tonal(
-                onPressed: widget.onFileUploaded,
-                child: const Text('Done'),
+            ),
+            if (currentFileName != null && hasFile) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.colorScheme.secondary),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: theme.colorScheme.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        currentFileName,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 48,
+                child: FilledButton(
+                  onPressed: widget.onFileUploaded,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Next Step",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward),
+                    ],
+                  ),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSourceOption(context, Icons.folder_open, "Files"),
+                  _buildSourceOption(
+                    context,
+                    Icons.document_scanner_outlined,
+                    "Scan",
+                  ),
+                  _buildSourceOption(context, Icons.add_to_drive, "Drive"),
+                ],
               ),
             ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSourceOption(BuildContext context, IconData icon, String label) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(
+            icon,
+            color: theme
+                .colorScheme
+                .primary, // Or keep orange if it's a specific brand color, but theme is safer
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 
@@ -188,6 +371,7 @@ class _RecipientManagerWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final draft = ref.watch(activeDraftProvider);
     if (draft == null) return const SizedBox.shrink();
 
@@ -201,84 +385,223 @@ class _RecipientManagerWidgetState
     final meetsMin = count >= minRecipients;
 
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      color: theme.colorScheme.surface,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.people),
-                const SizedBox(width: 8),
-                Text(
-                  'Recipients ($count / $maxRecipients)',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CURRENT RECIPIENTS',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "$count Added",
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Minimum required: $minRecipients',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            const SizedBox(height: 12),
-            for (final r in recipients) ...[
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.account_circle),
-                title: Text(r.name),
-                subtitle: Text(r.email),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => _removeRecipient(r.id ?? r.email),
+            const SizedBox(height: 16),
+            if (recipients.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  "No recipients added yet.",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
-              const Divider(height: 1),
+            for (final r in recipients) ...[
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: theme.colorScheme.primary,
+                    child: Text(
+                      r.name.isNotEmpty ? r.name[0].toUpperCase() : '?',
+                      style: TextStyle(color: theme.colorScheme.onPrimary),
+                    ),
+                  ),
+                  title: Text(
+                    r.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(r.email),
+                  trailing: IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: theme.colorScheme.error,
+                    ),
+                    onPressed: () => _removeRecipient(r.id ?? r.email),
+                  ),
+                ),
+              ),
             ],
             if (!isAtMax) ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _emailCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 24),
               Row(
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: _addRecipient,
-                    icon: const Icon(Icons.person_add),
-                    label: const Text('Add recipient'),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.person_add_alt_1,
+                      color: theme.colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  TextButton.icon(
-                    onPressed: _prefillCurrentUser,
-                    icon: const Icon(Icons.person),
-                    label: const Text('Add myself'),
+                  Text(
+                    "Add New Person",
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              Text(
+                "Full Name",
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _nameCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Jane Doe',
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHigh,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  suffixIcon: Icon(
+                    Icons.badge_outlined,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Email Address",
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _emailCtrl,
+                decoration: InputDecoration(
+                  hintText: 'jane@company.com',
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHigh,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: _addRecipient,
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: theme.colorScheme.outline),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add to List'),
+                ),
+              ),
+              // Quick add myself link
+              Center(
+                child: TextButton(
+                  onPressed: _prefillCurrentUser,
+                  child: const Text("Add myself"),
+                ),
+              ),
             ],
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: meetsMin ? widget.onComplete : null,
-              child: const Text('Continue'),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: FilledButton(
+                onPressed: meetsMin ? widget.onComplete : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  disabledBackgroundColor: theme.colorScheme.onSurface
+                      .withValues(alpha: 0.12),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -350,45 +673,72 @@ class DraftSummaryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      color: theme.colorScheme.surface,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.assignment),
+                Icon(Icons.assignment, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Draft Summary',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 Chip(
-                  label: Text(flowType),
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.secondaryContainer,
+                  label: Text(
+                    flowType,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                  backgroundColor: theme.colorScheme.secondaryContainer,
+                  side: BorderSide.none,
                 ),
               ],
             ),
-            const Divider(),
-            _buildRow(Icons.description, 'File', fileName),
-            const SizedBox(height: 8),
-            _buildRow(Icons.people, 'Recipients', '$recipientCount'),
-            const SizedBox(height: 8),
-            _buildRow(Icons.info, 'Status', status),
-            if (signUrl != null) ...[
-              const SizedBox(height: 8),
-              _buildRow(Icons.link, 'Sign URL', signUrl!),
-            ],
+            Divider(color: theme.colorScheme.outlineVariant),
+            const SizedBox(height: 16),
+            _buildRow(context, Icons.description, 'File', fileName),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: canSend ? onSend : null,
-              icon: const Icon(Icons.send),
-              label: const Text('Send for signing'),
+            _buildRow(context, Icons.people, 'Recipients', '$recipientCount'),
+            const SizedBox(height: 12),
+            _buildRow(context, Icons.info_outline, 'Status', status),
+            if (signUrl != null) ...[
+              const SizedBox(height: 12),
+              _buildRow(context, Icons.link, 'Sign URL', signUrl!),
+            ],
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton.icon(
+                onPressed: canSend ? onSend : null,
+                icon: const Icon(Icons.send),
+                label: const Text('Send for signing'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  disabledBackgroundColor: theme.colorScheme.onSurface
+                      .withValues(alpha: 0.12),
+                ),
+              ),
             ),
           ],
         ),
@@ -396,14 +746,38 @@ class DraftSummaryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(IconData icon, String label, String value) {
+  Widget _buildRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        const SizedBox(width: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(width: 8),
-        Expanded(child: SelectableText(value)),
+        Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            SelectableText(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -423,54 +797,157 @@ class SigningLinkWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      color: theme.colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.green),
-                const SizedBox(width: 8),
-                Text(
-                  'Ready to Sign!',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors
+                        .red
+                        .shade50, // Keep generic PDF red or use errorContainer
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.picture_as_pdf,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Signed Document.pdf",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 8,
+                            color:
+                                theme.colorScheme.primary, // Or success color
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "ACTIVE",
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "•  Link generated",
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text('You can start the signing process now.'),
+            const SizedBox(height: 24),
+            Text(
+              "SIGNING LINK",
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(4),
+                color: theme.colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.colorScheme.outlineVariant),
               ),
-              child: SelectableText(
-                signUrl,
-                style: Theme.of(context).textTheme.bodySmall,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      signUrl,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: onOpenLink,
-                icon: const Icon(Icons.open_in_new),
-                label: const Text('Open Signing Page'),
-              ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed:
+                        onOpenLink, // Reusing open link as Copy for now or implementing copy logic
+                    style: FilledButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.link),
+                    label: const Text("Copy Link"),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {}, // Mock email
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(color: theme.colorScheme.outline),
+                    ),
+                    icon: const Icon(Icons.email_outlined),
+                    label: const Text("Email"),
+                  ),
+                ),
+              ],
             ),
             if (onReset != null) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
                   onPressed: onReset,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Close & Start New'),
+                  child: Text(
+                    "Done",
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
                 ),
               ),
             ],

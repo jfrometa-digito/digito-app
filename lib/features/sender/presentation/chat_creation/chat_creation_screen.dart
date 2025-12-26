@@ -75,7 +75,8 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text: 'What type of signature request do you need?',
+          text:
+              'Welcome back! 👋 How can I assist you with your documents today?',
         ),
       );
       _bubbles.add(
@@ -96,11 +97,17 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
     };
 
     setState(() {
-      _bubbles.add(ChatBubbleModel(isUser: true, text: 'I want to $typeName'));
+      _bubbles.add(
+        ChatBubbleModel(
+          isUser: true,
+          text: 'I need to ${type.name} a new contract.',
+        ),
+      );
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text: 'Great. Please upload the PDF document you want to sign.',
+          text:
+              'Got it. Let\'s get that signed. Please upload the document you want to work on. I support PDF and DOCX files.',
         ),
       );
       _bubbles.add(
@@ -134,11 +141,12 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   void _handleFileUploaded() {
     setState(() {
-      _bubbles.add(ChatBubbleModel(isUser: true, text: 'File uploaded.'));
+      _bubbles.add(ChatBubbleModel(isUser: true, text: 'File uploaded'));
       _bubbles.add(
         ChatBubbleModel(
           isUser: false,
-          text: 'Got it. Now, let\'s add the recipients.',
+          text:
+              'Great! I\'ve prepared the document. Who needs to sign it? Please add their details below.',
         ),
       );
       _bubbles.add(
@@ -229,7 +237,8 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         _bubbles.add(
           ChatBubbleModel(
             isUser: false,
-            text: 'Your request has been sent successfully!',
+            text:
+                'Great job! I\'ve generated the signing link for \'${sentDraft?.title ?? "Document"}\'.',
           ),
         );
         _bubbles.add(
@@ -291,32 +300,77 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: const Text('New Request Assistant'),
+        centerTitle: true,
+        title: Column(
+          children: [
+            Text(
+              'SignBot Assistant',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            // OPTIONAL: status indicator or subtitle could go here
+          ],
+        ),
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
+        foregroundColor: theme.colorScheme.onSurface,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Restart Agent',
-            onPressed: _reset,
+            icon: const Icon(Icons.more_horiz),
+            tooltip: 'Options',
+            onPressed: _reset, // Using reset as options for now
           ),
         ],
       ),
       body: Column(
         children: [
-          // Status Bar
-          _DraftStatusBar(),
-          // Chat Area
+          // Removed standard Status Bar for cleaner look,
+          // can be re-integrated if needed but reference shows clean chat
+          // expanded chat area
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               itemCount: _bubbles.length,
               itemBuilder: (context, index) {
                 return _MessageBubble(bubble: _bubbles[index]);
               },
             ),
           ),
+          if (_bubbles.isEmpty)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.edit_document,
+                      size: 64,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "SignBot",
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Your document signing companion",
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -343,127 +397,72 @@ class _MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
     final isUser = bubble.isUser;
 
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.85,
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: isUser
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
-          children: [
-            if (bubble.text != null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isUser
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(16),
-                    topRight: const Radius.circular(16),
-                    bottomLeft: Radius.circular(isUser ? 16 : 0),
-                    bottomRight: Radius.circular(isUser ? 0 : 16),
-                  ),
+    if (bubble.content != null) {
+      // Content bubbles (widgets) typically full width or specialized
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: bubble.content!,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        children: [
+          if (!isUser) ...[
+            CircleAvatar(
+              backgroundColor: theme.colorScheme.primaryContainer,
+              radius: 16,
+              child: Icon(
+                Icons.edit,
+                size: 16,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isUser
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isUser ? 20 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 20),
                 ),
-                child: Text(
-                  bubble.text!,
-                  style: TextStyle(
-                    color: isUser
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.onSurface,
-                  ),
+                boxShadow: isUser
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Text(
+                bubble.text!,
+                style: TextStyle(
+                  color: isUser
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.onSurface,
+                  height: 1.4,
                 ),
               ),
-            if (bubble.content != null) ...[
-              if (bubble.text != null) const SizedBox(height: 8),
-              bubble.content!,
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DraftStatusBar extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final draft = ref.watch(activeDraftProvider);
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: theme.colorScheme.surfaceContainer,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _StatusItem(
-                  icon: Icons.description,
-                  label: 'Document:',
-                  value: draft?.title ?? 'Not selected',
-                ),
-                const SizedBox(height: 4),
-                _StatusItem(
-                  icon: Icons.people,
-                  label: 'Recipients:',
-                  value: (draft?.recipients ?? []).isEmpty
-                      ? 'None added'
-                      : (draft?.recipients ?? [])
-                            .map((e) => e.email)
-                            .join(', '),
-                ),
-              ],
             ),
           ),
+          if (!isUser) const SizedBox(width: 40), // Spacer for aesthetics
+          if (isUser) const SizedBox(width: 40),
         ],
       ),
-    );
-  }
-}
-
-class _StatusItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _StatusItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(color: theme.colorScheme.onSurface),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-      ],
     );
   }
 }
