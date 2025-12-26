@@ -1,108 +1,208 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:intl/intl.dart';
 import '../../../../domain/models/signature_request.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../providers/requests_provider.dart';
+import 'widgets/dashboard_widgets.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final requestsAsync = ref.watch(requestsProvider);
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
 
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _selectedIndex = 0; // 0: Drafting, 1: Signing, 2: Archiving
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: const Text(
-          'Digito',
-          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.5),
-        ),
-        actions: [
-          _buildProfileMenu(context, ref),
+      appBar: DashboardHeader(
+        onMenuTap: () {
+          // Future menu
+        },
+        onProfileTap: () => _showProfileMenu(context),
+      ),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              const SliverToBoxAdapter(child: DashboardHero()),
+              SliverToBoxAdapter(
+                child: SegmentedTabSelector(
+                  selectedIndex: _selectedIndex,
+                  onTabChanged: (index) =>
+                      setState(() => _selectedIndex = index),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: _buildCurrentView(),
+              ),
+              // Space for bottom input bar
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: PromptInputBar(
+              onTap: () {
+                ref.read(activeDraftProvider.notifier).clear();
+                context.pushNamed('create_chat');
+              },
+            ),
+          ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ref.read(activeDraftProvider.notifier).clear();
-          context.push('/create/chat');
-        },
-        label: const Text('Create with AI'),
-        icon: const Icon(Icons.flash_on),
-      ),
-      body: requestsAsync.when(
-        data: (requests) {
-          return CustomScrollView(
-            slivers: [
-              // Hero / Quick Actions
-              SliverToBoxAdapter(
-                child: _QuickActionsSection(),
-              ),
+    );
+  }
 
-              // Recent Activity Header
-              if (requests.isNotEmpty)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Row(
-                      children: [
-                        Text(
-                          'Recent Activity',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => context.pushNamed('history'),
-                          child: const Text('View All'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+  Widget _buildCurrentView() {
+    switch (_selectedIndex) {
+      case 0:
+        return _buildDraftingView();
+      case 1:
+        return _buildSigningView();
+      case 2:
+        return _buildArchivingView();
+      default:
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+  }
 
-              // Requests List
-              if (requests.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _EmptyState(),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        // Show newest first
-                        final req = requests[requests.length - 1 - index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _RequestCard(
-                            request: req,
-                            onTap: () => _resumeDraft(context, ref, req),
-                          ),
-                        );
-                      },
-                      childCount: requests.length,
-                    ),
-                  ),
-                ),
+  Widget _buildDraftingView() {
+    final theme = Theme.of(context);
+    return SliverList(
+      delegate: SliverChildListDelegate([
+        Text(
+          "Let's get your documents signed.",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        DashboardOptionCard(
+          title: 'Self-Sign Document',
+          subtitle: 'Sign a document just for yourself',
+          icon: Icons.edit_note,
+          iconBgColor: const Color(0xFFE8F0FE), // Light blue
+          iconColor: const Color(0xFF1967D2), // Google Blue
+          onTap: () async {
+            await ref.read(activeDraftProvider.notifier).initSignMyself();
+            if (mounted) context.pushNamed('create_chat');
+          },
+        ),
+        DashboardOptionCard(
+          title: '1-on-1 Signing',
+          subtitle: 'Send to one other person',
+          icon: Icons.people_outline,
+          iconBgColor: const Color(0xFFF3E8FD), // Light purple
+          iconColor: const Color(0xFF9334E6), // Purple
+          onTap: () async {
+            await ref.read(activeDraftProvider.notifier).initOneOnOne();
+            if (mounted) context.pushNamed('create_chat');
+          },
+        ),
+        DashboardOptionCard(
+          title: 'Multiparty Flow',
+          subtitle: 'Sequential signing for teams',
+          icon: Icons.groups_outlined,
+          iconBgColor: const Color(0xFFE6F4EA), // Light green
+          iconColor: const Color(0xFF137333), // Green
+          onTap: () async {
+            await ref.read(activeDraftProvider.notifier).initMultiParty();
+            if (mounted) context.pushNamed('create_chat');
+          },
+        ),
+      ]),
+    );
+  }
 
-              // Bottom spacing
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+  Widget _buildSigningView() {
+    final requestsAsync = ref.watch(requestsProvider);
+    return requestsAsync.when(
+      data: (requests) {
+        final activeRequests = requests
+            .where(
+              (r) =>
+                  r.status == RequestStatus.sent ||
+                  r.status == RequestStatus.draft,
+            )
+            .toList();
+
+        if (activeRequests.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 40),
+              child: Center(child: Text("No active signing requests.")),
+            ),
           );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        }
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final req = activeRequests[activeRequests.length - 1 - index];
+            return _RequestItem(
+              request: req,
+              onTap: () => _resumeDraft(context, ref, req),
+            );
+          }, childCount: activeRequests.length),
+        );
+      },
+      loading: () => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator()),
       ),
+      error: (err, _) =>
+          SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
+    );
+  }
+
+  Widget _buildArchivingView() {
+    final requestsAsync = ref.watch(requestsProvider);
+    return requestsAsync.when(
+      data: (requests) {
+        final archivedRequests = requests
+            .where(
+              (r) =>
+                  r.status == RequestStatus.completed ||
+                  r.status == RequestStatus.declined,
+            )
+            .toList();
+
+        if (archivedRequests.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 40),
+              child: Center(child: Text("No archived documents.")),
+            ),
+          );
+        }
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            // Reversed
+            final req = archivedRequests[archivedRequests.length - 1 - index];
+            return _RequestItem(
+              request: req,
+              onTap: () => _resumeDraft(context, ref, req),
+            );
+          }, childCount: archivedRequests.length),
+        );
+      },
+      loading: () => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, _) =>
+          SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
     );
   }
 
@@ -114,285 +214,74 @@ class DashboardScreen extends ConsumerWidget {
       } else if (req.recipients.isNotEmpty) {
         context.pushNamed('recipients');
       } else {
-        context.pushNamed('create');
+        context.pushNamed('create_chat');
       }
     } else if (req.status == RequestStatus.sent) {
       context.pushNamed('share', pathParameters: {'requestId': req.id});
-    } else {
-      // Future: View completed/declined details
     }
   }
 
-  Widget _buildProfileMenu(BuildContext context, WidgetRef ref) {
-    final isAuthAsync = ref.watch(isAuthenticatedProvider);
+  Future<void> _showProfileMenu(BuildContext context) async {
+    try {
+      final isAuth = await ref.read(isAuthenticatedProvider.future);
 
-    return isAuthAsync.when(
-      data: (isAuth) {
-        if (isAuth) {
-          return PopupMenuButton<String>(
-            icon: const Icon(Icons.account_circle),
-            itemBuilder: (context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'profile',
-                child: Row(
-                  children: [
-                    Icon(Icons.person, size: 20),
-                    SizedBox(width: 12),
-                    Text('Profile'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'theme',
-                child: _ThemeMenuItem(),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem<String>(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, size: 20),
-                    SizedBox(width: 12),
-                    Text('Log Out'),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) async {
-              if (value == 'profile') {
-                context.pushNamed('profile');
-              } else if (value == 'theme') {
-                ref.read(appThemeModeProvider.notifier).toggle();
-              } else if (value == 'logout') {
-                final authService = ref.read(authServiceProvider);
-                await authService.logout();
-                ref.invalidate(currentUserProvider);
-                ref.invalidate(isAuthenticatedProvider);
-              }
-            },
-          );
-        }
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () => ref.read(appThemeModeProvider.notifier).toggle(),
-              icon: Icon(
-                Theme.of(context).brightness == Brightness.light
-                    ? Icons.dark_mode
-                    : Icons.light_mode,
-              ),
-            ),
-            IconButton(
-              onPressed: () => context.pushNamed('login'),
-              icon: const Icon(Icons.account_circle),
-            ),
-          ],
-        );
-      },
-      loading: () => const SizedBox(
-          width: 48,
-          child: Center(
-              child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2)))),
-      error: (_, __) => IconButton(
-        onPressed: () => context.pushNamed('login'),
-        icon: const Icon(Icons.account_circle),
-      ),
-    );
-  }
-}
+      if (!context.mounted) return;
 
-class _QuickActionsSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+      if (!isAuth) {
+        context.pushNamed('login');
+        return;
+      }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.light
-            ? colorScheme.primaryContainer.withOpacity(0.4)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'What would you like to do?',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: colorScheme.onSurface,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(
-                  title: 'Sign Myself',
-                  subtitle: 'Quick solo signature',
-                  icon: Icons.edit,
-                  color: colorScheme.primary,
-                  onTap: () async {
-                    await ref
-                        .read(activeDraftProvider.notifier)
-                        .initSignMyself();
-                    if (context.mounted) context.pushNamed('create');
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(
-                  title: '1-on-1 Sign',
-                  subtitle: 'You and another',
-                  icon: Icons.people,
-                  color: Colors.indigo,
-                  onTap: () async {
-                    await ref.read(activeDraftProvider.notifier).initOneOnOne();
-                    if (context.mounted) context.pushNamed('create');
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _QuickActionCard(
-            title: 'Multi-party Signature',
-            subtitle: 'Request signatures from multiple recipients',
-            icon: Icons.description,
-            isWide: true,
-            color: Colors.teal,
-            onTap: () async {
-              await ref.read(activeDraftProvider.notifier).initMultiParty();
-              if (context.mounted) context.pushNamed('create');
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  final bool isWide;
-
-  const _QuickActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-    this.isWide = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Theme.of(context).brightness == Brightness.light
-              ? color.withOpacity(0.1)
-              : color.withOpacity(0.3),
-        ),
-      ),
-      color: Theme.of(context).colorScheme.surface,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+      showModalBottomSheet(
+        context: context,
+        builder: (ctx) => SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 28),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('Profile'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.pushNamed('profile');
+                },
               ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              ListTile(
+                leading: const Icon(Icons.brightness_6),
+                title: const Text('Toggle Theme'),
+                onTap: () {
+                  ref.read(appThemeModeProvider.notifier).toggle();
+                  Navigator.pop(ctx);
+                },
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Log Out'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final authService = ref.read(authServiceProvider);
+                  await authService.logout();
+                  ref.invalidate(currentUserProvider);
+                  ref.invalidate(isAuthenticatedProvider);
+                },
               ),
             ],
           ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (context.mounted) {
+        context.pushNamed('login');
+      }
+    }
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Opacity(
-              opacity: 0.5,
-              child:
-                  Icon(Icons.description, size: 64, color: colorScheme.outline),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No recent activity',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your sent and draft requests will appear here',
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RequestCard extends StatelessWidget {
+class _RequestItem extends StatelessWidget {
   final SignatureRequest request;
   final VoidCallback onTap;
 
-  const _RequestCard({required this.request, required this.onTap});
+  const _RequestItem({required this.request, required this.onTap});
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
@@ -409,14 +298,19 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('MMM d, yyyy').format(request.createdAt);
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final dateStr = DateFormat('MMM d').format(request.createdAt);
+    final statusColor = _getStatusColor(request.status);
 
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
+      color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: InkWell(
         onTap: onTap,
@@ -426,17 +320,12 @@ class _RequestCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 52,
-                height: 52,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(request.status).withValues(alpha: 0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.description,
-                  color: _getStatusColor(request.status),
-                  size: 26,
-                ),
+                child: Icon(Icons.description, color: statusColor, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -444,91 +333,31 @@ class _RequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      request.title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 15),
+                      request.title.isNotEmpty
+                          ? request.title
+                          : "Untitled Document",
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(request.status)
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            request.status.name.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: _getStatusColor(request.status),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          dateStr,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+                    Text(
+                      "$dateStr • ${request.status.name.toUpperCase()}",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
-              if (request.status == RequestStatus.draft)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'CONTINUE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_right_alt,
-                            size: 12, color: colorScheme.primary),
-                      ],
-                    ),
-                  ),
-                ),
-              Icon(Icons.chevron_right, color: colorScheme.outline, size: 20),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ThemeMenuItem extends ConsumerWidget {
-  const _ThemeMenuItem();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    return Row(
-      children: [
-        Icon(isLight ? Icons.dark_mode : Icons.light_mode, size: 20),
-        const SizedBox(width: 12),
-        Text(isLight ? 'Dark Mode' : 'Light Mode'),
-      ],
     );
   }
 }

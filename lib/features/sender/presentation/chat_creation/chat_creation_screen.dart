@@ -90,12 +90,6 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
   }
 
   void _handleFlowSelected(SignatureRequestType type) {
-    String typeName = switch (type) {
-      SignatureRequestType.selfSign => 'Sign Myself',
-      SignatureRequestType.oneOnOne => 'One-on-One',
-      SignatureRequestType.multiParty => 'Multi-Party',
-    };
-
     setState(() {
       _bubbles.add(
         ChatBubbleModel(
@@ -126,7 +120,7 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
         ChatBubbleModel(
           isUser: false,
           text:
-              'It looks like you started a request. Please upload the PDF document.',
+              'I\'ve started a **${type.name.replaceAll(RegExp(r'(?<!^)(?=[A-Z])'), ' ')}** request for you. Please upload the PDF document you\'d like to use.',
         ),
       );
       _bubbles.add(
