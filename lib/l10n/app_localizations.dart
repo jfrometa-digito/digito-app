@@ -116,6 +116,42 @@ abstract class AppLocalizations {
   /// **'Powered by DocSecure'**
   String get dashboardPoweredBy;
 
+  /// No description provided for @onboardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Get Started!'**
+  String get onboardingTitle;
+
+  /// No description provided for @onboardingStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Identity'**
+  String get onboardingStep1;
+
+  /// No description provided for @onboardingStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Contracts'**
+  String get onboardingStep2;
+
+  /// No description provided for @onboardingStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Digito ID'**
+  String get onboardingStep3;
+
+  /// No description provided for @onboardingStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Document'**
+  String get onboardingStep4;
+
+  /// No description provided for @onboardingComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all set to sign!'**
+  String get onboardingComplete;
+
   /// No description provided for @tabHome.
   ///
   /// In en, this message translates to:

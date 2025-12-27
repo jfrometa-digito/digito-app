@@ -18,6 +18,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardPoweredBy => 'Powered by DocSecure';
 
   @override
+  String get onboardingTitle => 'Let\'s Get Started!';
+
+  @override
+  String get onboardingStep1 => 'Verify Identity';
+
+  @override
+  String get onboardingStep2 => 'Sign Contracts';
+
+  @override
+  String get onboardingStep3 => 'Get Digito ID';
+
+  @override
+  String get onboardingStep4 => 'Sign Document';
+
+  @override
+  String get onboardingComplete => 'You\'re all set to sign!';
+
+  @override
   String get tabHome => 'Home';
 
   @override

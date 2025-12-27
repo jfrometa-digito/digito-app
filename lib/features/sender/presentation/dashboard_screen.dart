@@ -9,6 +9,8 @@ import '../../../../core/providers/theme_provider.dart';
 import '../providers/requests_provider.dart';
 import 'widgets/dashboard_widgets.dart';
 import '../../../../core/providers/locale_provider.dart';
+import '../../../../core/providers/profile_provider.dart';
+import 'widgets/onboarding_guide.dart';
 
 enum SigningGroupMode { daily, weekly, monthly }
 
@@ -93,9 +95,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
+    final profile = ref.watch(profileStateProvider).value;
+
     return SliverList(
       delegate: SliverChildListDelegate([
-        DashboardHero(onChatTap: () => context.pushNamed('create_chat')),
+        OnboardingGuide(profile: profile),
         const SizedBox(height: 32),
         DashboardOptionCard(
           title: l10n.cardSelfSignTitle,
@@ -177,11 +181,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         }
 
         final displayItems = <dynamic>[];
-
-        // Grouping Selector
-        displayItems.add('GROUP_SELECTOR');
-
-        // Combined and Grouped List
         final allActive = [...drafts, ...sent];
         allActive.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -198,51 +197,52 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           delegate: SliverChildBuilderDelegate((context, index) {
             final item = displayItems[index];
 
-            if (item == 'GROUP_SELECTOR') {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _GroupModeChip(
-                        label: "Daily",
-                        isSelected: _groupMode == SigningGroupMode.daily,
-                        onSelected: () =>
-                            setState(() => _groupMode = SigningGroupMode.daily),
-                      ),
-                      const SizedBox(width: 8),
-                      _GroupModeChip(
-                        label: "Weekly",
-                        isSelected: _groupMode == SigningGroupMode.weekly,
-                        onSelected: () => setState(
-                          () => _groupMode = SigningGroupMode.weekly,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _GroupModeChip(
-                        label: "Monthly",
-                        isSelected: _groupMode == SigningGroupMode.monthly,
-                        onSelected: () => setState(
-                          () => _groupMode = SigningGroupMode.monthly,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
             if (item is String && item.startsWith('HEADER:')) {
+              final label = item.replaceFirst('HEADER:', '');
+              final isFirstHeader = index == 0;
+
               return Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 8),
-                child: Text(
-                  item.replaceFirst('HEADER:', ''),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.1,
-                  ),
+                padding: const EdgeInsets.only(top: 24, bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    if (isFirstHeader)
+                      Row(
+                        children: [
+                          _CompactGroupChip(
+                            label: "Daily",
+                            isSelected: _groupMode == SigningGroupMode.daily,
+                            onSelected: () => setState(
+                              () => _groupMode = SigningGroupMode.daily,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          _CompactGroupChip(
+                            label: "Weekly",
+                            isSelected: _groupMode == SigningGroupMode.weekly,
+                            onSelected: () => setState(
+                              () => _groupMode = SigningGroupMode.weekly,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          _CompactGroupChip(
+                            label: "Monthly",
+                            isSelected: _groupMode == SigningGroupMode.monthly,
+                            onSelected: () => setState(
+                              () => _groupMode = SigningGroupMode.monthly,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               );
             }
@@ -935,12 +935,12 @@ class DashboardHero extends StatelessWidget {
   }
 }
 
-class _GroupModeChip extends StatelessWidget {
+class _CompactGroupChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onSelected;
 
-  const _GroupModeChip({
+  const _CompactGroupChip({
     required this.label,
     required this.isSelected,
     required this.onSelected,
@@ -949,27 +949,34 @@ class _GroupModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onSelected(),
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        color: isSelected
-            ? theme.colorScheme.onPrimary
-            : theme.colorScheme.onSurface,
-      ),
-      selectedColor: theme.colorScheme.primary,
-      backgroundColor: theme.colorScheme.surfaceContainerHighest.withValues(
-        alpha: 0.3,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
+    return InkWell(
+      onTap: onSelected,
+      borderRadius: BorderRadius.circular(100),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
           color: isSelected
               ? theme.colorScheme.primary
-              : theme.colorScheme.outlineVariant,
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant,
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface,
+          ),
         ),
       ),
     );
