@@ -110,6 +110,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildDraftingView() {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final requests = ref.watch(requestsProvider).value ?? [];
+    final pendingCount = requests
+        .where((r) => r.status == RequestStatus.sent)
+        .length;
+
     return SliverList(
       delegate: SliverChildListDelegate([
         DashboardOptionCard(
@@ -169,16 +174,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         const SizedBox(height: 32),
         Text(
           "QUICK ACCESS",
-          style: TextStyle(
+          style: theme.textTheme.labelMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 12,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
           ),
         ),
         const SizedBox(height: 16),
         QuickAccessRow(
-          pendingCount: 3, // Placeholder
+          pendingCount: pendingCount,
           onPendingTap: () =>
               setState(() => _selectedIndex = 1), // Go to Signing
           onUploadTap: () async {
@@ -232,34 +236,142 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildArchivingView() {
     final requestsAsync = ref.watch(requestsProvider);
+    final theme = Theme.of(context);
+
     return requestsAsync.when(
       data: (requests) {
-        final archivedRequests = requests
-            .where(
-              (r) =>
-                  r.status == RequestStatus.completed ||
-                  r.status == RequestStatus.declined,
-            )
-            .toList();
+        final ongoingRequests =
+            requests.where((r) => r.status == RequestStatus.sent).toList()
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-        if (archivedRequests.isEmpty) {
+        final terminalRequests =
+            requests
+                .where(
+                  (r) =>
+                      r.status == RequestStatus.completed ||
+                      r.status == RequestStatus.declined ||
+                      r.status == RequestStatus.voided,
+                )
+                .toList()
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        if (ongoingRequests.isEmpty && terminalRequests.isEmpty) {
           return const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.only(top: 40),
-              child: Center(child: Text("No archived documents.")),
+              child: Center(child: Text("No documents in history.")),
             ),
           );
         }
 
+        // Group history by month/year
+        final groupedHistory = <String, List<SignatureRequest>>{};
+        final monthFormat = DateFormat('MMMM yyyy');
+
+        for (final req in terminalRequests) {
+          final key = monthFormat.format(req.createdAt).toUpperCase();
+          if (!groupedHistory.containsKey(key)) {
+            groupedHistory[key] = [];
+          }
+          groupedHistory[key]!.add(req);
+        }
+
+        final historyKeys = groupedHistory.keys.toList();
+
+        // Build a flat list of items (headers and cards)
+        final displayItems = <dynamic>[];
+
+        // Section: Title & Subtitle
+        displayItems.add('TITLE_SECTION');
+
+        // Section: Ongoing
+        if (ongoingRequests.isNotEmpty) {
+          displayItems.add('HEADER:ONGOING');
+          displayItems.addAll(ongoingRequests);
+        }
+
+        // Section: History Groups
+        if (terminalRequests.isNotEmpty) {
+          for (final key in historyKeys) {
+            displayItems.add('HEADER:$key');
+            displayItems.addAll(groupedHistory[key]!);
+          }
+        }
+
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            // Reversed
-            final req = archivedRequests[archivedRequests.length - 1 - index];
-            return _RequestItem(
-              request: req,
-              onTap: () => _resumeDraft(context, ref, req),
-            );
-          }, childCount: archivedRequests.length),
+            final item = displayItems[index];
+
+            if (item == 'TITLE_SECTION') {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Document History",
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: theme.colorScheme.primary,
+                          ),
+                          onPressed: () {}, // Filter logic later
+                        ),
+                      ],
+                    ),
+                    Text(
+                      "Manage your ongoing and signed documents",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (item is String && item.startsWith('HEADER:')) {
+              final label = item.replaceFirst('HEADER:', '');
+              return Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 12),
+                child: Text(
+                  label == 'ONGOING' ? "ONGOING SIGNATURES" : label,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              );
+            }
+
+            if (item is SignatureRequest) {
+              final recipientName = item.recipients.isNotEmpty
+                  ? item.recipients.first.name
+                  : "No Recipient";
+              final recipientEmail = item.recipients.isNotEmpty
+                  ? item.recipients.first.email
+                  : "";
+
+              return HistoryRequestItem(
+                title: item.title,
+                recipientName: recipientName,
+                recipientEmail: recipientEmail,
+                date: item.createdAt,
+                status: item.status,
+                onTap: () => _resumeDraft(context, ref, item),
+              );
+            }
+
+            return const SizedBox.shrink();
+          }, childCount: displayItems.length),
         );
       },
       loading: () => const SliverToBoxAdapter(
@@ -376,6 +488,7 @@ class _RequestItem extends StatelessWidget {
       case RequestStatus.completed:
         return Colors.green;
       case RequestStatus.declined:
+      case RequestStatus.voided:
         return Colors.red;
     }
   }

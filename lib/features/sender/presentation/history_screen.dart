@@ -58,8 +58,11 @@ class HistoryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding:
-                        const EdgeInsets.only(top: 24, bottom: 16, left: 4),
+                    padding: const EdgeInsets.only(
+                      top: 24,
+                      bottom: 16,
+                      left: 4,
+                    ),
                     child: Text(
                       month.toUpperCase(),
                       style: TextStyle(
@@ -70,10 +73,12 @@ class HistoryScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  ...items.map((req) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _HistoryItemCard(request: req),
-                      )),
+                  ...items.map(
+                    (req) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _HistoryItemCard(request: req),
+                    ),
+                  ),
                 ],
               );
             },
@@ -100,6 +105,7 @@ class _HistoryItemCard extends ConsumerWidget {
       case RequestStatus.completed:
         return Colors.green;
       case RequestStatus.declined:
+      case RequestStatus.voided:
         return Colors.red;
     }
   }

@@ -1,5 +1,7 @@
 import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../../../domain/models/signature_request.dart';
 
 // --- Header ---
 // --- Header ---
@@ -388,5 +390,225 @@ class StartDocumentButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// --- History Request Item ---
+class HistoryRequestItem extends StatelessWidget {
+  final String title;
+  final String recipientName;
+  final String recipientEmail;
+  final DateTime date;
+  final RequestStatus status;
+  final VoidCallback onTap;
+
+  const HistoryRequestItem({
+    super.key,
+    required this.title,
+    required this.recipientName,
+    required this.recipientEmail,
+    required this.date,
+    required this.status,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateStr = DateFormat('MMM d, yyyy').format(date);
+    final statusColor = _getStatusColor(status);
+    final statusBgColor = _getStatusBgColor(status);
+    // basic label for now
+    final statusLabel = status.name;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: statusBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        _getStatusIcon(status),
+                        color: statusColor,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title.isNotEmpty
+                                      ? title
+                                      : "Untitled Document",
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusBgColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  statusLabel.toUpperCase(),
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.person_outline,
+                                size: 16,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                recipientName.isNotEmpty
+                                    ? recipientName
+                                    : "Unknown Recipient",
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.alternate_email,
+                                size: 16,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  recipientEmail.isNotEmpty
+                                      ? recipientEmail
+                                      : "No email provided",
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Sent: $dateStr",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      "View Details →",
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(RequestStatus status) {
+    switch (status) {
+      case RequestStatus.draft:
+        return Colors.orange;
+      case RequestStatus.sent:
+        return Colors.blue;
+      case RequestStatus.completed:
+        return const Color(0xFF137333); // Green
+      case RequestStatus.declined:
+      case RequestStatus.voided:
+        return const Color(0xFFC5221F); // Red
+    }
+  }
+
+  Color _getStatusBgColor(RequestStatus status) {
+    switch (status) {
+      case RequestStatus.draft:
+        return Colors.orange.withOpacity(0.1);
+      case RequestStatus.sent:
+        return Colors.blue.withOpacity(0.1);
+      case RequestStatus.completed:
+        return const Color(0xFFE6F4EA); // Light Green
+      case RequestStatus.declined:
+      case RequestStatus.voided:
+        return const Color(0xFFFCE8E6); // Light Red
+    }
+  }
+
+  IconData _getStatusIcon(RequestStatus status) {
+    switch (status) {
+      case RequestStatus.draft:
+        return Icons.edit_note;
+      case RequestStatus.sent:
+        return Icons.send;
+      case RequestStatus.completed:
+        return Icons.check_circle_outline;
+      case RequestStatus.declined:
+        return Icons.cancel_outlined;
+      case RequestStatus.voided:
+        return Icons.block;
+    }
   }
 }

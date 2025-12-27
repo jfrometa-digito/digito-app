@@ -5,18 +5,9 @@ import 'recipient.dart';
 
 part 'signature_request.g.dart';
 
-enum RequestStatus {
-  draft,
-  sent,
-  completed,
-  declined,
-}
+enum RequestStatus { draft, sent, completed, declined, voided }
 
-enum SignatureRequestType {
-  selfSign,
-  oneOnOne,
-  multiParty,
-}
+enum SignatureRequestType { selfSign, oneOnOne, multiParty }
 
 @JsonSerializable(explicitToJson: true)
 class SignatureRequest {

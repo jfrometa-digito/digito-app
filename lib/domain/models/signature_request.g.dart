@@ -51,6 +51,7 @@ const _$RequestStatusEnumMap = {
   RequestStatus.sent: 'sent',
   RequestStatus.completed: 'completed',
   RequestStatus.declined: 'declined',
+  RequestStatus.voided: 'voided',
 };
 
 const _$SignatureRequestTypeEnumMap = {
