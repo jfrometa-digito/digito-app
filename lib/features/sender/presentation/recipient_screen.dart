@@ -253,7 +253,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       return;
     }
 
-    context.pushNamed('editor');
+    context.pushNamed('editor', pathParameters: {'requestId': activeDraft.id});
   }
 
   @override

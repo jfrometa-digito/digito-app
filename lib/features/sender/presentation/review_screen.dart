@@ -46,15 +46,11 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     final activeDraft = ref.watch(activeDraftProvider);
     // If no draft (shouldn't happen unless deep linked incorrectly or weird state), handle gracefully
     if (activeDraft == null && !_isSent) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_isSent && _sentRequest != null) {
-      return ShareLinkView(
+      return RequestDetailsView(
         request: _sentRequest!,
         onAction: () {
           ref.read(activeDraftProvider.notifier).clear();
@@ -99,7 +95,8 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   child: OutlinedButton(
                     onPressed: () => context.pop(),
                     style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.all(16)),
+                      padding: const EdgeInsets.all(16),
+                    ),
                     child: const Text('Back'),
                   ),
                 ),
@@ -116,7 +113,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -162,27 +159,38 @@ class _SummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: TextStyle(
-                        color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 // Handle long text
-                Text(content,
-                    maxLines: 2,
+                Text(
+                  content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                if (subContent != null)
+                  Text(
+                    subContent!,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: colorScheme.onSurface)),
-                if (subContent != null)
-                  Text(subContent!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: colorScheme.onSurfaceVariant, fontSize: 14)),
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

@@ -7,7 +7,6 @@ import '../../features/sender/presentation/document_select_screen.dart';
 import '../../features/sender/presentation/recipient_screen.dart';
 import '../../features/sender/presentation/editor_screen.dart';
 import '../../features/sender/presentation/review_screen.dart';
-import '../../features/sender/presentation/history_screen.dart';
 import '../../features/signer/presentation/signing_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -27,40 +26,31 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: '/',
             builder: (context, state) => const DashboardScreen(),
-            routes: [
-              GoRoute(
-                path: 'create',
-                name: 'create',
-                builder: (context, state) => const DocumentSelectScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'recipients',
-                    name: 'recipients',
-                    builder: (context, state) => const RecipientScreen(),
-                  ),
-                  GoRoute(
-                    path: 'editor',
-                    name: 'editor',
-                    builder: (context, state) => const EditorScreen(),
-                  ),
-                  GoRoute(
-                    path: 'review',
-                    name: 'review',
-                    builder: (context, state) => const ReviewScreen(),
-                  ),
-                ],
-              ),
-              GoRoute(
-                path: 'create/chat',
-                name: 'create_chat',
-                builder: (context, state) => const ChatCreationScreen(),
-              ),
-              GoRoute(
-                path: 'history',
-                name: 'history',
-                builder: (context, state) => const HistoryScreen(),
-              ),
-            ],
+          ),
+          GoRoute(
+            path: '/create-chat',
+            name: 'create_chat',
+            builder: (context, state) => const ChatCreationScreen(),
+          ),
+          GoRoute(
+            path: '/create',
+            name: 'create',
+            builder: (context, state) => const DocumentSelectScreen(),
+          ),
+          GoRoute(
+            path: '/recipients',
+            name: 'recipients',
+            builder: (context, state) => const RecipientScreen(),
+          ),
+          GoRoute(
+            path: '/editor/:requestId',
+            name: 'editor',
+            builder: (context, state) => const EditorScreen(),
+          ),
+          GoRoute(
+            path: '/review',
+            name: 'review',
+            builder: (context, state) => const ReviewScreen(),
           ),
           // Login Route
           GoRoute(
@@ -82,15 +72,15 @@ GoRouter appRouter(Ref ref) {
               return SigningScreen(requestId: requestId);
             },
           ),
-          // Share Link Route
+          // Request Details Route
           GoRoute(
-            path: '/share/:requestId',
-            name: 'share',
+            path: '/details/:requestId',
+            name: 'details',
             builder: (context, state) {
               final requestId = state.pathParameters['requestId']!;
               final requests = ref.watch(requestsProvider).value ?? [];
               final request = requests.firstWhere((r) => r.id == requestId);
-              return ShareLinkView(
+              return RequestDetailsView(
                 request: request,
                 onAction: () => context.go('/'),
                 actionLabel: 'Back to Dashboard',

@@ -24,7 +24,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabSigning => 'Firmando';
 
   @override
-  String get tabArchiving => 'Archivado';
+  String get tabArchiving => 'Historico';
 
   @override
   String get cardSelfSignTitle => 'Auto-Firmar Documento';

@@ -24,7 +24,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabSigning => 'Signing';
 
   @override
-  String get tabArchiving => 'Archiving';
+  String get tabArchiving => 'History';
 
   @override
   String get cardSelfSignTitle => 'Self-Sign Document';

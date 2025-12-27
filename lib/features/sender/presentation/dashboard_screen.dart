@@ -21,6 +21,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedIndex = 0; // 0: Drafting, 1: Signing, 2: Archiving
   String _searchQuery = "";
   final Set<RequestStatus> _selectedStatuses = {};
+  bool _showSearch = false;
+  bool _showFilters = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,34 +38,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                  child: Text(
-                    "Signing Mode",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: Text(
-                    "Select a workflow to begin",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyTabDelegate(
                   child: SegmentedTabSelector(
                     selectedIndex: _selectedIndex,
                     onTabChanged: (index) =>
@@ -113,9 +90,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final requests = ref.watch(requestsProvider).value ?? [];
-    final pendingCount = requests
-        .where((r) => r.status == RequestStatus.sent)
-        .length;
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -175,7 +149,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         const SizedBox(height: 32),
         Text(
-          "QUICK ACCESS",
+          "ONGOING DRAFTS",
           style: theme.textTheme.labelMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.bold,
@@ -183,18 +157,85 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        QuickAccessRow(
-          pendingCount: pendingCount,
-          onPendingTap: () =>
-              setState(() => _selectedIndex = 1), // Go to Signing
-          onUploadTap: () async {
-            // Go to self-sign as a shortcut
-            await ref.read(activeDraftProvider.notifier).initSignMyself();
-            if (mounted) context.pushNamed('create_chat');
-          },
-        ),
+        ..._buildGroupedDrafts(context, requests),
       ]),
     );
+  }
+
+  List<Widget> _buildGroupedDrafts(
+    BuildContext context,
+    List<SignatureRequest> requests,
+  ) {
+    final drafts = requests
+        .where((r) => r.status == RequestStatus.draft)
+        .toList();
+    drafts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (drafts.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(child: Text("No drafts found.")),
+        ),
+      ];
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final thisWeek = today.subtract(const Duration(days: 7));
+    final thisMonth = DateTime(now.year, now.month, 1);
+
+    final grouped = <String, List<SignatureRequest>>{
+      'TODAY': [],
+      'THIS WEEK': [],
+      'THIS MONTH': [],
+      'OLDER': [],
+    };
+
+    for (final draft in drafts) {
+      final date = draft.createdAt;
+      final draftDay = DateTime(date.year, date.month, date.day);
+
+      if (draftDay == today) {
+        grouped['TODAY']!.add(draft);
+      } else if (date.isAfter(thisWeek)) {
+        grouped['THIS WEEK']!.add(draft);
+      } else if (date.isAfter(thisMonth)) {
+        grouped['THIS MONTH']!.add(draft);
+      } else {
+        grouped['OLDER']!.add(draft);
+      }
+    }
+
+    final widgets = <Widget>[];
+    final theme = Theme.of(context);
+
+    grouped.forEach((label, items) {
+      if (items.isNotEmpty) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 8),
+            child: Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+        for (final item in items) {
+          widgets.add(
+            _RequestItem(
+              request: item,
+              onTap: () => _resumeDraft(context, ref, item),
+            ),
+          );
+        }
+      }
+    });
+
+    return widgets;
   }
 
   Widget _buildSigningView() {
@@ -202,11 +243,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return requestsAsync.when(
       data: (requests) {
         final activeRequests = requests
-            .where(
-              (r) =>
-                  r.status == RequestStatus.sent ||
-                  r.status == RequestStatus.draft,
-            )
+            .where((r) => r.status == RequestStatus.sent)
             .toList();
 
         if (activeRequests.isEmpty) {
@@ -269,58 +306,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           return matchesStatus && matchesSearch && isArchivingRelevant;
         }).toList();
 
-        final ongoingRequests =
-            filteredRequests
-                .where((r) => r.status == RequestStatus.sent)
-                .toList()
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-        final terminalRequests =
-            filteredRequests
-                .where(
-                  (r) =>
-                      r.status == RequestStatus.completed ||
-                      r.status == RequestStatus.declined ||
-                      r.status == RequestStatus.voided,
-                )
-                .toList()
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-        // Group history by month/year
-        final groupedHistory = <String, List<SignatureRequest>>{};
-        final monthFormat = DateFormat('MMMM yyyy');
-
-        for (final req in terminalRequests) {
-          final key = monthFormat.format(req.createdAt).toUpperCase();
-          if (!groupedHistory.containsKey(key)) {
-            groupedHistory[key] = [];
-          }
-          groupedHistory[key]!.add(req);
-        }
-
-        final historyKeys = groupedHistory.keys.toList();
-
         // Build a flat list of items (headers and cards)
         final displayItems = <dynamic>[];
 
         // Section: Title & Search/Filter UI
         displayItems.add('TITLE_SECTION');
 
-        if (ongoingRequests.isEmpty && terminalRequests.isEmpty) {
+        String? firstHeader;
+        if (filteredRequests.isEmpty) {
           displayItems.add('EMPTY_STATE');
         } else {
-          // Section: Ongoing
-          if (ongoingRequests.isNotEmpty) {
-            displayItems.add('HEADER:ONGOING');
-            displayItems.addAll(ongoingRequests);
+          // Group everything by month/year
+          final groupedHistory = <String, List<SignatureRequest>>{};
+          final monthFormat = DateFormat('MMMM yyyy');
+
+          // Ensure sorted by date newest first
+          final sortedRequests = List<SignatureRequest>.from(filteredRequests)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          for (final req in sortedRequests) {
+            final key = monthFormat.format(req.createdAt).toUpperCase();
+            if (!groupedHistory.containsKey(key)) {
+              groupedHistory[key] = [];
+            }
+            groupedHistory[key]!.add(req);
           }
 
-          // Section: History Groups
-          if (terminalRequests.isNotEmpty) {
-            for (final key in historyKeys) {
+          final historyKeys = groupedHistory.keys.toList();
+          firstHeader = historyKeys.isNotEmpty ? historyKeys.first : null;
+
+          for (int i = 0; i < historyKeys.length; i++) {
+            final key = historyKeys[i];
+            // Skip adding HEADER for the first one if we want it in the Title section
+            if (i > 0) {
               displayItems.add('HEADER:$key');
-              displayItems.addAll(groupedHistory[key]!);
             }
+            displayItems.addAll(groupedHistory[key]!);
           }
         }
 
@@ -329,7 +350,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             final item = displayItems[index];
 
             if (item == 'TITLE_SECTION') {
-              return _buildArchivingHeader(theme);
+              return _buildArchivingHeader(theme, firstHeader);
             }
 
             if (item == 'EMPTY_STATE') {
@@ -403,87 +424,135 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildArchivingHeader(ThemeData theme) {
+  Widget _buildArchivingHeader(ThemeData theme, String? firstHeader) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment
+              .spaceBetween, // Changed to spaceBetween for alignment
           children: [
-            Text(
-              "Document History",
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            if (firstHeader != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 0),
+                child: Text(
+                  firstHeader,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              )
+            else
+              const SizedBox.shrink(),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    color: _showSearch
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: () => setState(() => _showSearch = !_showSearch),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _showFilters ? Icons.filter_list_off : Icons.filter_list,
+                    color: _showFilters
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: () => setState(() => _showFilters = !_showFilters),
+                ),
+                if (_searchQuery.isNotEmpty || _selectedStatuses.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _searchQuery = "";
+                        _selectedStatuses.clear();
+                      });
+                    },
+                    child: const Text("Clear All"),
+                  ),
+              ],
             ),
-            if (_searchQuery.isNotEmpty || _selectedStatuses.isNotEmpty)
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _searchQuery = "";
-                    _selectedStatuses.clear();
-                  });
-                },
-                child: const Text("Clear All"),
-              ),
           ],
         ),
-        Text(
-          "Manage your ongoing and signed documents",
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 20),
-        // Search Bar
-        TextField(
-          onChanged: (value) => setState(() => _searchQuery = value),
-          decoration: InputDecoration(
-            hintText: "Search by title or recipient...",
-            prefixIcon: const Icon(Icons.search),
-            filled: true,
-            fillColor: theme.colorScheme.surfaceContainerLow,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
+        ClipRect(
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: Column(
+              children: [
+                if (_showSearch) ...[
+                  const SizedBox(height: 8),
+                  // Search Bar
+                  TextField(
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    decoration: InputDecoration(
+                      hintText: "Search by title or recipient...",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerLow,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                  ),
+                ],
+                if (_showFilters) ...[
+                  const SizedBox(height: 12),
+                  // Filter Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _StatusFilterChip(
+                          label: "Sent",
+                          status: RequestStatus.sent,
+                          isSelected: _selectedStatuses.contains(
+                            RequestStatus.sent,
+                          ),
+                          onSelected: _toggleStatusFilter,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusFilterChip(
+                          label: "Completed",
+                          status: RequestStatus.completed,
+                          isSelected: _selectedStatuses.contains(
+                            RequestStatus.completed,
+                          ),
+                          onSelected: _toggleStatusFilter,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusFilterChip(
+                          label: "Declined",
+                          status: RequestStatus.declined,
+                          isSelected: _selectedStatuses.contains(
+                            RequestStatus.declined,
+                          ),
+                          onSelected: _toggleStatusFilter,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusFilterChip(
+                          label: "Voided",
+                          status: RequestStatus.voided,
+                          isSelected: _selectedStatuses.contains(
+                            RequestStatus.voided,
+                          ),
+                          onSelected: _toggleStatusFilter,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 0),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Filter Chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _StatusFilterChip(
-                label: "Sent",
-                status: RequestStatus.sent,
-                isSelected: _selectedStatuses.contains(RequestStatus.sent),
-                onSelected: _toggleStatusFilter,
-              ),
-              const SizedBox(width: 8),
-              _StatusFilterChip(
-                label: "Completed",
-                status: RequestStatus.completed,
-                isSelected: _selectedStatuses.contains(RequestStatus.completed),
-                onSelected: _toggleStatusFilter,
-              ),
-              const SizedBox(width: 8),
-              _StatusFilterChip(
-                label: "Declined",
-                status: RequestStatus.declined,
-                isSelected: _selectedStatuses.contains(RequestStatus.declined),
-                onSelected: _toggleStatusFilter,
-              ),
-              const SizedBox(width: 8),
-              _StatusFilterChip(
-                label: "Voided",
-                status: RequestStatus.voided,
-                isSelected: _selectedStatuses.contains(RequestStatus.voided),
-                onSelected: _toggleStatusFilter,
-              ),
-            ],
           ),
         ),
         const SizedBox(height: 8),
@@ -507,15 +576,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     if (req.status == RequestStatus.draft) {
       // Always route drafts through chat for a unified experience
-      context.push('/create_chat');
+      context.push('/create-chat');
     } else {
-      // For sent/completed, show details (resume in recipients or editor as needed)
-      // This part might need refinement later, but for now we focus on Drafts.
-      if (req.recipients.isEmpty) {
-        context.push('/recipients');
-      } else {
-        context.push('/editor/${req.id}');
-      }
+      // For sent/completed/voided, show the details view
+      context.push('/details/${req.id}');
     }
   }
 
@@ -719,5 +783,34 @@ class _RequestItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyTabDelegate({required this.child});
+
+  @override
+  double get minExtent => 72.0;
+  @override
+  double get maxExtent => 72.0;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_StickyTabDelegate oldDelegate) {
+    return true;
   }
 }

@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabArchiving.
   ///
   /// In en, this message translates to:
-  /// **'Archiving'**
+  /// **'History'**
   String get tabArchiving;
 
   /// No description provided for @cardSelfSignTitle.
