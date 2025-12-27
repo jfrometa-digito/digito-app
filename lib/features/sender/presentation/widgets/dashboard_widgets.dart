@@ -145,8 +145,8 @@ class DashboardOptionCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final Color iconBgColor;
-  final Color iconColor;
+  final Color? iconBgColor;
+  final Color? iconColor;
   final VoidCallback onTap;
   final bool isHero; // If true, renders the large top card
 
@@ -155,8 +155,8 @@ class DashboardOptionCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.iconBgColor = const Color(0xFFE8F0FE), // Default fallback
-    this.iconColor = const Color(0xFF1967D2), // Default fallback
+    this.iconBgColor,
+    this.iconColor,
     required this.onTap,
     this.isHero = false,
   });
@@ -164,6 +164,9 @@ class DashboardOptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final effectiveIconBgColor =
+        iconBgColor ?? theme.colorScheme.primaryContainer;
+    final effectiveIconColor = iconColor ?? theme.colorScheme.primary;
 
     if (isHero) {
       return Card(
@@ -184,10 +187,10 @@ class DashboardOptionCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: iconBgColor,
+                        color: effectiveIconBgColor,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(icon, color: iconColor, size: 24),
+                      child: Icon(icon, color: effectiveIconColor, size: 24),
                     ),
                     // Decorative elements from design
                     Row(
@@ -239,10 +242,10 @@ class DashboardOptionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: iconBgColor,
+                  color: effectiveIconBgColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: effectiveIconColor, size: 20),
               ),
               const Spacer(),
               Text(

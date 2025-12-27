@@ -113,11 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo/Branding
-                  Icon(
-                    Icons.description,
-                    size: 72,
-                    color: colorScheme.primary,
-                  ),
+                  Icon(Icons.fingerprint, size: 72, color: colorScheme.primary),
                   const SizedBox(height: 16),
                   Text(
                     'Digito',
@@ -242,7 +238,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2),
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
                           ),
@@ -339,10 +336,7 @@ class _SocialLoginButton extends StatelessWidget {
         icon: Icon(icon, size: 20),
         label: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );

@@ -83,7 +83,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           Expanded(
             child: Container(
               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              child: activeDraft.filePath?.isNotEmpty == true ||
+              child:
+                  activeDraft.filePath?.isNotEmpty == true ||
                       activeDraft.fileBytes != null
                   ? _buildPdfPreview(activeDraft)
                   : const Center(child: Text('No document content available')),
@@ -110,16 +111,19 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.description,
-                    size: 64,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.5)),
+                Icon(
+                  Icons.description,
+                  size: 64,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.5),
+                ),
                 const SizedBox(height: 16),
                 const Text('PDF Content Loaded'),
-                const Text('Field placement active',
-                    style: TextStyle(fontSize: 12)),
+                const Text(
+                  'Field placement active',
+                  style: TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -138,37 +142,43 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             final RenderBox renderBox = context.findRenderObject() as RenderBox;
             final localPosition = renderBox.globalToLocal(details.offset);
             _onFieldDropped(
-                details.data, localPosition, 0); // Default to current page
+              details.data,
+              localPosition,
+              0,
+            ); // Default to current page
           },
           builder: (context, candidateData, rejectedData) {
             return Stack(
               children: [
-                ...request.fields.map((field) => Positioned(
-                      left: field.position.dx,
-                      top: field.position.dy,
-                      child: GestureDetector(
-                        onLongPress: () => _deleteField(field.id),
-                        child: Draggable<String>(
-                          data: field.id,
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: _PlacedFieldWidget(field: field),
-                          ),
-                          childWhenDragging: Opacity(
-                            opacity: 0.5,
-                            child: _PlacedFieldWidget(field: field),
-                          ),
-                          onDragEnd: (details) {
-                            final RenderBox renderBox =
-                                context.findRenderObject() as RenderBox;
-                            final localPosition =
-                                renderBox.globalToLocal(details.offset);
-                            _updateFieldPosition(field.id, localPosition);
-                          },
+                ...request.fields.map(
+                  (field) => Positioned(
+                    left: field.position.dx,
+                    top: field.position.dy,
+                    child: GestureDetector(
+                      onLongPress: () => _deleteField(field.id),
+                      child: Draggable<String>(
+                        data: field.id,
+                        feedback: Material(
+                          color: Colors.transparent,
                           child: _PlacedFieldWidget(field: field),
                         ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.5,
+                          child: _PlacedFieldWidget(field: field),
+                        ),
+                        onDragEnd: (details) {
+                          final RenderBox renderBox =
+                              context.findRenderObject() as RenderBox;
+                          final localPosition = renderBox.globalToLocal(
+                            details.offset,
+                          );
+                          _updateFieldPosition(field.id, localPosition);
+                        },
+                        child: _PlacedFieldWidget(field: field),
                       ),
-                    )),
+                    ),
+                  ),
+                ),
               ],
             );
           },
@@ -182,14 +192,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       color: colorScheme.surface,
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _DraggableTool(
             type: FieldType.signature,
             icon: Icons.edit,
             label: 'Signature',
-            color: Colors.indigo,
+            color: colorScheme.primary,
           ),
           _DraggableTool(
             type: FieldType.initials,
@@ -280,7 +290,7 @@ class _PlacedFieldWidget extends StatelessWidget {
 
     switch (field.type) {
       case FieldType.signature:
-        color = Colors.indigo;
+        color = Theme.of(context).colorScheme.primary;
         icon = Icons.edit;
         label = 'Signature';
         break;
@@ -316,10 +326,7 @@ class _PlacedFieldWidget extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),

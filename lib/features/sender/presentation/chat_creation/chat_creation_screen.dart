@@ -287,7 +287,10 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
             content: SigningLinkWidget(
               signUrl: signUrl,
               onOpenLink: () => _launchSignUrl(signUrl),
-              onReset: _reset,
+              onReset: () {
+                ref.read(activeDraftProvider.notifier).clear();
+                context.go('/');
+              },
             ),
           ),
         );

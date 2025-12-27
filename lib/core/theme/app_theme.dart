@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Brand Colors
-  static const _brandPrimary = Color(0xFF4F46E5); // Indigo 600
+  static const _brandPrimary = Color(0xFF4317C0); // Digito Primary Purple
   // static const _brandSecondary = Color(0xFF10B981); // Emerald 500 - Unused for now
 
   // Semantic Colors - Light
@@ -63,10 +63,11 @@ class AppTheme {
       scaffoldBackgroundColor: background,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
+        primary: primary,
+        onPrimary: Colors.white,
         brightness: brightness,
         surface: surface,
         onSurface: text,
-        // background: background, // Deprecated in Flutter 3.22+, use surface/canvas
         outline: border,
       ),
       appBarTheme: AppBarTheme(
@@ -96,10 +97,7 @@ class AppTheme {
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
-        contentTextStyle: GoogleFonts.inter(
-          color: textSecondary,
-          fontSize: 16,
-        ),
+        contentTextStyle: GoogleFonts.inter(color: textSecondary, fontSize: 16),
       ),
       dividerTheme: DividerThemeData(color: border, thickness: 1),
       inputDecorationTheme: InputDecorationTheme(
@@ -118,8 +116,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primary, width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -130,17 +130,11 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       iconTheme: IconThemeData(color: text),
-      textTheme: baseTextTheme.apply(
-        bodyColor: text,
-        displayColor: text,
-      ),
+      textTheme: baseTextTheme.apply(bodyColor: text, displayColor: text),
     );
   }
 }
