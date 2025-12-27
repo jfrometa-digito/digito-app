@@ -116,11 +116,11 @@ abstract class AppLocalizations {
   /// **'Powered by DocSecure'**
   String get dashboardPoweredBy;
 
-  /// No description provided for @tabDrafting.
+  /// No description provided for @tabHome.
   ///
   /// In en, this message translates to:
-  /// **'Drafting'**
-  String get tabDrafting;
+  /// **'Home'**
+  String get tabHome;
 
   /// No description provided for @tabSigning.
   ///

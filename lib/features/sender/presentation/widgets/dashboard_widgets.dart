@@ -90,7 +90,7 @@ class SegmentedTabSelector extends StatelessWidget {
         builder: (context, constraints) {
           return Row(
             children: [
-              _buildTab(context, AppLocalizations.of(context)!.tabDrafting, 0),
+              _buildTab(context, AppLocalizations.of(context)!.tabHome, 0),
               _buildTab(context, AppLocalizations.of(context)!.tabSigning, 1),
               _buildTab(context, AppLocalizations.of(context)!.tabArchiving, 2),
             ],

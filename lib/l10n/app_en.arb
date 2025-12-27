@@ -3,7 +3,7 @@
     "dashboardTitle": "SignBot Assistant",
     "dashboardSubtitle": "Your document signing companion",
     "dashboardPoweredBy": "Powered by DocSecure",
-    "tabDrafting": "Drafting",
+    "tabHome": "Home",
     "tabSigning": "Signing",
     "tabArchiving": "History",
     "cardSelfSignTitle": "Self-Sign Document",

@@ -10,6 +10,8 @@ import '../providers/requests_provider.dart';
 import 'widgets/dashboard_widgets.dart';
 import '../../../../core/providers/locale_provider.dart';
 
+enum SigningGroupMode { daily, weekly, monthly }
+
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -23,6 +25,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final Set<RequestStatus> _selectedStatuses = {};
   bool _showSearch = false;
   bool _showFilters = false;
+  SigningGroupMode _groupMode = SigningGroupMode.daily;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +79,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildCurrentView() {
     switch (_selectedIndex) {
       case 0:
-        return _buildDraftingView();
+        return _buildHomeView();
       case 1:
         return _buildSigningView();
       case 2:
@@ -86,13 +89,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  Widget _buildDraftingView() {
+  Widget _buildHomeView() {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final requests = ref.watch(requestsProvider).value ?? [];
 
     return SliverList(
       delegate: SliverChildListDelegate([
+        DashboardHero(onChatTap: () => context.pushNamed('create_chat')),
+        const SizedBox(height: 32),
         DashboardOptionCard(
           title: l10n.cardSelfSignTitle,
           subtitle: l10n.cardSelfSignSubtitle,
@@ -131,7 +135,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 height: 170, // Fixed height for alignment
                 child: DashboardOptionCard(
                   title: l10n.cardMultiPartyTitle,
-                  // Truncate subtitle visually if needed in new design but keeping localized string
                   subtitle: l10n.cardMultiPartySubtitle,
                   icon: Icons.groups_outlined,
                   iconBgColor: const Color(0xFFE6F4EA), // Light green
@@ -147,122 +150,112 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 32),
-        Text(
-          "ONGOING DRAFTS",
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ..._buildGroupedDrafts(context, requests),
       ]),
     );
   }
 
-  List<Widget> _buildGroupedDrafts(
-    BuildContext context,
-    List<SignatureRequest> requests,
-  ) {
-    final drafts = requests
-        .where((r) => r.status == RequestStatus.draft)
-        .toList();
-    drafts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-    if (drafts.isEmpty) {
-      return [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: Center(child: Text("No drafts found.")),
-        ),
-      ];
-    }
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final thisWeek = today.subtract(const Duration(days: 7));
-    final thisMonth = DateTime(now.year, now.month, 1);
-
-    final grouped = <String, List<SignatureRequest>>{
-      'TODAY': [],
-      'THIS WEEK': [],
-      'THIS MONTH': [],
-      'OLDER': [],
-    };
-
-    for (final draft in drafts) {
-      final date = draft.createdAt;
-      final draftDay = DateTime(date.year, date.month, date.day);
-
-      if (draftDay == today) {
-        grouped['TODAY']!.add(draft);
-      } else if (date.isAfter(thisWeek)) {
-        grouped['THIS WEEK']!.add(draft);
-      } else if (date.isAfter(thisMonth)) {
-        grouped['THIS MONTH']!.add(draft);
-      } else {
-        grouped['OLDER']!.add(draft);
-      }
-    }
-
-    final widgets = <Widget>[];
-    final theme = Theme.of(context);
-
-    grouped.forEach((label, items) {
-      if (items.isNotEmpty) {
-        widgets.add(
-          Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 8),
-            child: Text(
-              label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
-        for (final item in items) {
-          widgets.add(
-            _RequestItem(
-              request: item,
-              onTap: () => _resumeDraft(context, ref, item),
-            ),
-          );
-        }
-      }
-    });
-
-    return widgets;
-  }
-
   Widget _buildSigningView() {
     final requestsAsync = ref.watch(requestsProvider);
+    final theme = Theme.of(context);
+
     return requestsAsync.when(
       data: (requests) {
-        final activeRequests = requests
+        final drafts = requests
+            .where((r) => r.status == RequestStatus.draft)
+            .toList();
+        final sent = requests
             .where((r) => r.status == RequestStatus.sent)
             .toList();
 
-        if (activeRequests.isEmpty) {
+        if (drafts.isEmpty && sent.isEmpty) {
           return const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.only(top: 40),
-              child: Center(child: Text("No active signing requests.")),
+              child: Center(child: Text("No active requests or drafts.")),
             ),
           );
         }
 
+        final displayItems = <dynamic>[];
+
+        // Grouping Selector
+        displayItems.add('GROUP_SELECTOR');
+
+        // Combined and Grouped List
+        final allActive = [...drafts, ...sent];
+        allActive.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        final grouped = _groupRequests(allActive, _groupMode);
+
+        grouped.forEach((label, items) {
+          if (items.isNotEmpty) {
+            displayItems.add('HEADER:$label');
+            displayItems.addAll(items);
+          }
+        });
+
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            final req = activeRequests[activeRequests.length - 1 - index];
-            return _RequestItem(
-              request: req,
-              onTap: () => _resumeDraft(context, ref, req),
-            );
-          }, childCount: activeRequests.length),
+            final item = displayItems[index];
+
+            if (item == 'GROUP_SELECTOR') {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _GroupModeChip(
+                        label: "Daily",
+                        isSelected: _groupMode == SigningGroupMode.daily,
+                        onSelected: () =>
+                            setState(() => _groupMode = SigningGroupMode.daily),
+                      ),
+                      const SizedBox(width: 8),
+                      _GroupModeChip(
+                        label: "Weekly",
+                        isSelected: _groupMode == SigningGroupMode.weekly,
+                        onSelected: () => setState(
+                          () => _groupMode = SigningGroupMode.weekly,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _GroupModeChip(
+                        label: "Monthly",
+                        isSelected: _groupMode == SigningGroupMode.monthly,
+                        onSelected: () => setState(
+                          () => _groupMode = SigningGroupMode.monthly,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            if (item is String && item.startsWith('HEADER:')) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 8),
+                child: Text(
+                  item.replaceFirst('HEADER:', ''),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              );
+            }
+
+            if (item is SignatureRequest) {
+              return _RequestItem(
+                request: item,
+                onTap: () => _resumeDraft(context, ref, item),
+              );
+            }
+
+            return const SizedBox.shrink();
+          }, childCount: displayItems.length),
         );
       },
       loading: () => const SliverToBoxAdapter(
@@ -271,6 +264,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       error: (err, _) =>
           SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
     );
+  }
+
+  Map<String, List<SignatureRequest>> _groupRequests(
+    List<SignatureRequest> requests,
+    SigningGroupMode mode,
+  ) {
+    final grouped = <String, List<SignatureRequest>>{};
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    for (final req in requests) {
+      String label;
+      final date = req.createdAt;
+
+      if (mode == SigningGroupMode.daily) {
+        final reqDay = DateTime(date.year, date.month, date.day);
+        if (reqDay == today) {
+          label = "TODAY";
+        } else if (reqDay == today.subtract(const Duration(days: 1))) {
+          label = "YESTERDAY";
+        } else {
+          label = DateFormat('EEEE, MMM d').format(date).toUpperCase();
+        }
+      } else if (mode == SigningGroupMode.weekly) {
+        final weekStart = today.subtract(Duration(days: today.weekday - 1));
+        final lastWeekStart = weekStart.subtract(const Duration(days: 7));
+
+        if (date.isAfter(weekStart)) {
+          label = "THIS WEEK";
+        } else if (date.isAfter(lastWeekStart)) {
+          label = "LAST WEEK";
+        } else {
+          label = "OLDER";
+        }
+      } else {
+        label = DateFormat('MMMM yyyy').format(date).toUpperCase();
+      }
+
+      if (!grouped.containsKey(label)) {
+        grouped[label] = [];
+      }
+      grouped[label]!.add(req);
+    }
+    return grouped;
   }
 
   Widget _buildArchivingView() {
@@ -700,6 +737,35 @@ class _StatusFilterChip extends StatelessWidget {
   }
 }
 
+class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyTabDelegate({required this.child});
+
+  @override
+  double get minExtent => 72.0;
+  @override
+  double get maxExtent => 72.0;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_StickyTabDelegate oldDelegate) {
+    return true;
+  }
+}
+
 class _RequestItem extends StatelessWidget {
   final SignatureRequest request;
   final VoidCallback onTap;
@@ -786,31 +852,126 @@ class _RequestItem extends StatelessWidget {
   }
 }
 
-class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
+class DashboardHero extends StatelessWidget {
+  final VoidCallback onChatTap;
 
-  _StickyTabDelegate({required this.child});
-
-  @override
-  double get minExtent => 72.0;
-  @override
-  double get maxExtent => 72.0;
+  const DashboardHero({super.key, required this.onChatTap});
 
   @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      color: Theme.of(context).colorScheme.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: child,
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(32),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.fingerprint,
+              size: 48,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            l10n.dashboardTitle,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.dashboardSubtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Text(
+              l10n.dashboardPoweredBy,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _GroupModeChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onSelected;
+
+  const _GroupModeChip({
+    required this.label,
+    required this.isSelected,
+    required this.onSelected,
+  });
 
   @override
-  bool shouldRebuild(_StickyTabDelegate oldDelegate) {
-    return true;
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onSelected(),
+      labelStyle: TextStyle(
+        fontSize: 12,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected
+            ? theme.colorScheme.onPrimary
+            : theme.colorScheme.onSurface,
+      ),
+      selectedColor: theme.colorScheme.primary,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest.withValues(
+        alpha: 0.3,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outlineVariant,
+        ),
+      ),
+    );
   }
 }

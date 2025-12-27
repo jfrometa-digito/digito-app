@@ -3,7 +3,7 @@
     "dashboardTitle": "Asistente SignBot",
     "dashboardSubtitle": "Tu compañero de firma digital",
     "dashboardPoweredBy": "Potenciado por DocSecure",
-    "tabDrafting": "Borradores",
+    "tabHome": "Inicio",
     "tabSigning": "Firmando",
     "tabArchiving": "Historico",
     "cardSelfSignTitle": "Auto-Firmar Documento",

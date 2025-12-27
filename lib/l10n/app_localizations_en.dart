@@ -18,7 +18,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardPoweredBy => 'Powered by DocSecure';
 
   @override
-  String get tabDrafting => 'Drafting';
+  String get tabHome => 'Home';
 
   @override
   String get tabSigning => 'Signing';
