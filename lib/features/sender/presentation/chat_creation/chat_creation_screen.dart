@@ -5,6 +5,7 @@ import 'package:digito_app/features/sender/presentation/chat_creation/sender_cat
 import 'package:digito_app/features/sender/providers/requests_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatCreationScreen extends ConsumerStatefulWidget {
   const ChatCreationScreen({super.key});
@@ -34,25 +35,31 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
     // Check current state to decide where to start
     final draft = ref.read(activeDraftProvider);
 
-    // Always start with a greeting
-    setState(() {
-      _bubbles.add(
-        ChatBubbleModel(
-          isUser: false,
-          text: AppLocalizations.of(context)!.chatGreeting,
-        ),
-      );
-    });
-
     if (draft == null ||
         (draft.title == 'Untitled Document' &&
             draft.type == SignatureRequestType.multiParty &&
             draft.recipients.isEmpty &&
             draft.filePath == null)) {
-      // Clean slate or default init
+      // Clean slate - start with a greeting
+      setState(() {
+        _bubbles.add(
+          ChatBubbleModel(
+            isUser: false,
+            text: AppLocalizations.of(context)!.chatGreeting,
+          ),
+        );
+      });
       _showFlowSelector();
     } else {
-      // Resume logic
+      // Resume logic - special greeting
+      setState(() {
+        _bubbles.add(
+          ChatBubbleModel(
+            isUser: false,
+            text: AppLocalizations.of(context)!.chatResumeGreeting(draft.title),
+          ),
+        );
+      });
       _resumeFlow(draft);
     }
   }
@@ -64,10 +71,31 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
 
     if (!hasFile) {
       _showFileUploader(draft.type);
-    } else {
-      // File exists, check recipients
-      // For simplicity in resume, go to recipient manager
+      return;
+    }
+
+    // File exists, check recipients
+    final constraints = _getConstraints(draft.type);
+    final minRecipients = constraints['min'] ?? 1;
+    final hasEnoughRecipients = draft.recipients.length >= minRecipients;
+
+    if (!hasEnoughRecipients) {
       _showRecipientManager();
+      return;
+    }
+
+    // Everything is there, show summary
+    _handleRecipientsComplete();
+  }
+
+  Map<String, int> _getConstraints(SignatureRequestType type) {
+    switch (type) {
+      case SignatureRequestType.selfSign:
+        return {'min': 1, 'max': 1};
+      case SignatureRequestType.oneOnOne:
+        return {'min': 2, 'max': 2};
+      case SignatureRequestType.multiParty:
+        return {'min': 3, 'max': 10};
     }
   }
 
@@ -201,13 +229,6 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
   }
 
   Widget _buildSummaryWidget() {
-    // We wrap it in a Builder or Consumer to ensure it gets fresh data when built,
-    // although DraftSummaryWidget is stateless, it relies on passed data.
-    // Actually DraftSummaryWidget is stateless and we pass data.
-    // BUT we need it to update if the underlying draft changes?
-    // The previous implementation watched the draft in the parent or the widget.
-    // DraftSummaryWidget is just a display.
-    // So we should wrap it in a Consumer to pass the latest data.
     return Consumer(
       builder: (context, ref, _) {
         final draft = ref.watch(activeDraftProvider);
@@ -219,11 +240,22 @@ class _ChatCreationScreenState extends ConsumerState<ChatCreationScreen> {
           status: draft.status.name,
           flowType: draft.type.name,
           canSend: true, // Logic check can be added
+          hasFields: draft.fields.isNotEmpty,
           signUrl: draft.signUrl,
           onSend: _handleSend,
+          onEditFields: _handleEditFields,
         );
       },
     );
+  }
+
+  void _handleEditFields() {
+    final draft = ref.read(activeDraftProvider);
+    if (draft == null) return;
+
+    // Navigate to editor
+    // Note: We expect context.push to be available via go_router
+    context.push('/editor/${draft.id}');
   }
 
   Future<void> _handleSend() async {

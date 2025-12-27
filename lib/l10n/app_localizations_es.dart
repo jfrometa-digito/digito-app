@@ -68,6 +68,11 @@ class AppLocalizationsEs extends AppLocalizations {
       '¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarte hoy con tus documentos?';
 
   @override
+  String chatResumeGreeting(String title) {
+    return '¡Bienvenido de nuevo! He cargado el borrador para $title.';
+  }
+
+  @override
   String chatRequestType(String type) {
     return 'Necesito $type un nuevo contrato.';
   }
@@ -192,6 +197,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get btnSendForSigning => 'Enviar para firmar';
+
+  @override
+  String get btnEditFields => 'Editar Campos';
+
+  @override
+  String get btnAddFields => 'Añadir Campos';
 
   @override
   String get signingLinkTitle => 'LISTO PARA FIRMAR';

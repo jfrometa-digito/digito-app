@@ -668,8 +668,10 @@ class DraftSummaryWidget extends StatelessWidget {
   final String status;
   final String flowType;
   final bool canSend;
+  final bool hasFields;
   final String? signUrl;
   final VoidCallback onSend;
+  final VoidCallback onEditFields;
 
   const DraftSummaryWidget({
     super.key,
@@ -678,7 +680,9 @@ class DraftSummaryWidget extends StatelessWidget {
     required this.status,
     required this.flowType,
     required this.canSend,
+    required this.hasFields,
     required this.onSend,
+    required this.onEditFields,
     this.signUrl,
   });
 
@@ -753,6 +757,25 @@ class DraftSummaryWidget extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: onEditFields,
+                icon: Icon(hasFields ? Icons.edit : Icons.add),
+                label: Text(
+                  hasFields
+                      ? AppLocalizations.of(context)!.btnEditFields
+                      : AppLocalizations.of(context)!.btnAddFields,
+                ),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 48,

@@ -20,6 +20,14 @@
 
     "chatGreeting": "¡Hola! Puedo ayudarte a crear una nueva solicitud de firma.",
     "chatWelcomeBack": "¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarte hoy con tus documentos?",
+    "chatResumeGreeting": "¡Bienvenido de nuevo! He cargado el borrador para {title}.",
+    "@chatResumeGreeting": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
     "chatRequestType": "Necesito {type} un nuevo contrato.",
     "chatUploadPrompt": "Entendido. Vamos a firmarlo. Por favor sube el documento que quieres usar. Soporta PDF y DOCX.",
     "chatStartedRequest": "He iniciado una solicitud de **{type}** para ti. Por favor sube el PDF que te gustaría usar.",
@@ -61,6 +69,8 @@
     "summaryStatus": "Estado",
     "summarySignUrl": "Enlace de Firma",
     "btnSendForSigning": "Enviar para firmar",
+    "btnEditFields": "Editar Campos",
+    "btnAddFields": "Añadir Campos",
 
     "signingLinkTitle": "LISTO PARA FIRMAR",
     "signingLinkGenerated": "Enlace de Firma Generado",

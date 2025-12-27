@@ -212,6 +212,12 @@ abstract class AppLocalizations {
   /// **'Welcome back! 👋 How can I assist you with your documents today?'**
   String get chatWelcomeBack;
 
+  /// No description provided for @chatResumeGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! I\'ve loaded your draft for {title}.'**
+  String chatResumeGreeting(String title);
+
   /// No description provided for @chatRequestType.
   ///
   /// In en, this message translates to:
@@ -439,6 +445,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send for signing'**
   String get btnSendForSigning;
+
+  /// No description provided for @btnEditFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Fields'**
+  String get btnEditFields;
+
+  /// No description provided for @btnAddFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Fields'**
+  String get btnAddFields;
 
   /// No description provided for @signingLinkTitle.
   ///

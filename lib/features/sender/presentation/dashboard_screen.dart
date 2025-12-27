@@ -19,6 +19,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedIndex = 0; // 0: Drafting, 1: Signing, 2: Archiving
+  String _searchQuery = "";
+  final Set<RequestStatus> _selectedStatuses = {};
 
   @override
   Widget build(BuildContext context) {
@@ -240,12 +242,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return requestsAsync.when(
       data: (requests) {
+        // --- Filtering Logic ---
+        final filteredRequests = requests.where((r) {
+          // Status Filter
+          final matchesStatus =
+              _selectedStatuses.isEmpty || _selectedStatuses.contains(r.status);
+
+          // Search Filter
+          final query = _searchQuery.toLowerCase();
+          final matchesSearch =
+              query.isEmpty ||
+              r.title.toLowerCase().contains(query) ||
+              r.recipients.any(
+                (rec) =>
+                    rec.name.toLowerCase().contains(query) ||
+                    rec.email.toLowerCase().contains(query),
+              );
+
+          // Basic Archiving Filter (Terminal + Sent)
+          final isArchivingRelevant =
+              r.status == RequestStatus.sent ||
+              r.status == RequestStatus.completed ||
+              r.status == RequestStatus.declined ||
+              r.status == RequestStatus.voided;
+
+          return matchesStatus && matchesSearch && isArchivingRelevant;
+        }).toList();
+
         final ongoingRequests =
-            requests.where((r) => r.status == RequestStatus.sent).toList()
+            filteredRequests
+                .where((r) => r.status == RequestStatus.sent)
+                .toList()
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         final terminalRequests =
-            requests
+            filteredRequests
                 .where(
                   (r) =>
                       r.status == RequestStatus.completed ||
@@ -254,15 +285,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 )
                 .toList()
               ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-        if (ongoingRequests.isEmpty && terminalRequests.isEmpty) {
-          return const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Center(child: Text("No documents in history.")),
-            ),
-          );
-        }
 
         // Group history by month/year
         final groupedHistory = <String, List<SignatureRequest>>{};
@@ -281,20 +303,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         // Build a flat list of items (headers and cards)
         final displayItems = <dynamic>[];
 
-        // Section: Title & Subtitle
+        // Section: Title & Search/Filter UI
         displayItems.add('TITLE_SECTION');
 
-        // Section: Ongoing
-        if (ongoingRequests.isNotEmpty) {
-          displayItems.add('HEADER:ONGOING');
-          displayItems.addAll(ongoingRequests);
-        }
+        if (ongoingRequests.isEmpty && terminalRequests.isEmpty) {
+          displayItems.add('EMPTY_STATE');
+        } else {
+          // Section: Ongoing
+          if (ongoingRequests.isNotEmpty) {
+            displayItems.add('HEADER:ONGOING');
+            displayItems.addAll(ongoingRequests);
+          }
 
-        // Section: History Groups
-        if (terminalRequests.isNotEmpty) {
-          for (final key in historyKeys) {
-            displayItems.add('HEADER:$key');
-            displayItems.addAll(groupedHistory[key]!);
+          // Section: History Groups
+          if (terminalRequests.isNotEmpty) {
+            for (final key in historyKeys) {
+              displayItems.add('HEADER:$key');
+              displayItems.addAll(groupedHistory[key]!);
+            }
           }
         }
 
@@ -303,36 +329,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             final item = displayItems[index];
 
             if (item == 'TITLE_SECTION') {
+              return _buildArchivingHeader(theme);
+            }
+
+            if (item == 'EMPTY_STATE') {
               return Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Document History",
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.filter_list,
-                            color: theme.colorScheme.primary,
-                          ),
-                          onPressed: () {}, // Filter logic later
-                        ),
-                      ],
-                    ),
-                    Text(
-                      "Manage your ongoing and signed documents",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                padding: const EdgeInsets.only(top: 40),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 48,
+                        color: theme.colorScheme.outline,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        _searchQuery.isEmpty && _selectedStatuses.isEmpty
+                            ? "No documents in history."
+                            : "No matches found.",
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -340,7 +361,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             if (item is String && item.startsWith('HEADER:')) {
               final label = item.replaceFirst('HEADER:', '');
               return Padding(
-                padding: const EdgeInsets.only(top: 24, bottom: 12),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Text(
                   label == 'ONGOING' ? "ONGOING SIGNATURES" : label,
                   style: theme.textTheme.labelMedium?.copyWith(
@@ -382,18 +403,119 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  void _resumeDraft(BuildContext context, WidgetRef ref, SignatureRequest req) {
-    if (req.status == RequestStatus.draft) {
-      ref.read(activeDraftProvider.notifier).loadFromObject(req);
-      if (req.fields.isNotEmpty) {
-        context.pushNamed('editor');
-      } else if (req.recipients.isNotEmpty) {
-        context.pushNamed('recipients');
+  Widget _buildArchivingHeader(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Document History",
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (_searchQuery.isNotEmpty || _selectedStatuses.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _searchQuery = "";
+                    _selectedStatuses.clear();
+                  });
+                },
+                child: const Text("Clear All"),
+              ),
+          ],
+        ),
+        Text(
+          "Manage your ongoing and signed documents",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 20),
+        // Search Bar
+        TextField(
+          onChanged: (value) => setState(() => _searchQuery = value),
+          decoration: InputDecoration(
+            hintText: "Search by title or recipient...",
+            prefixIcon: const Icon(Icons.search),
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerLow,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _StatusFilterChip(
+                label: "Sent",
+                status: RequestStatus.sent,
+                isSelected: _selectedStatuses.contains(RequestStatus.sent),
+                onSelected: _toggleStatusFilter,
+              ),
+              const SizedBox(width: 8),
+              _StatusFilterChip(
+                label: "Completed",
+                status: RequestStatus.completed,
+                isSelected: _selectedStatuses.contains(RequestStatus.completed),
+                onSelected: _toggleStatusFilter,
+              ),
+              const SizedBox(width: 8),
+              _StatusFilterChip(
+                label: "Declined",
+                status: RequestStatus.declined,
+                isSelected: _selectedStatuses.contains(RequestStatus.declined),
+                onSelected: _toggleStatusFilter,
+              ),
+              const SizedBox(width: 8),
+              _StatusFilterChip(
+                label: "Voided",
+                status: RequestStatus.voided,
+                isSelected: _selectedStatuses.contains(RequestStatus.voided),
+                onSelected: _toggleStatusFilter,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  void _toggleStatusFilter(RequestStatus status, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedStatuses.add(status);
       } else {
-        context.pushNamed('create_chat');
+        _selectedStatuses.remove(status);
       }
-    } else if (req.status == RequestStatus.sent) {
-      context.pushNamed('share', pathParameters: {'requestId': req.id});
+    });
+  }
+
+  void _resumeDraft(BuildContext context, WidgetRef ref, SignatureRequest req) {
+    // Set as active draft
+    ref.read(activeDraftProvider.notifier).loadFromObject(req);
+
+    if (req.status == RequestStatus.draft) {
+      // Always route drafts through chat for a unified experience
+      context.push('/create_chat');
+    } else {
+      // For sent/completed, show details (resume in recipients or editor as needed)
+      // This part might need refinement later, but for now we focus on Drafts.
+      if (req.recipients.isEmpty) {
+        context.push('/recipients');
+      } else {
+        context.push('/editor/${req.id}');
+      }
     }
   }
 
@@ -470,6 +592,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         // Safe fallback
       }
     }
+  }
+}
+
+class _StatusFilterChip extends StatelessWidget {
+  final String label;
+  final RequestStatus status;
+  final bool isSelected;
+  final Function(RequestStatus, bool) onSelected;
+
+  const _StatusFilterChip({
+    required this.label,
+    required this.status,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) => onSelected(status, selected),
+      selectedColor: theme.colorScheme.primaryContainer,
+      checkmarkColor: theme.colorScheme.primary,
+      labelStyle: TextStyle(
+        color: isSelected
+            ? theme.colorScheme.onPrimaryContainer
+            : theme.colorScheme.onSurface,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outline,
+          width: isSelected ? 1 : 0.5,
+        ),
+      ),
+    );
   }
 }
 

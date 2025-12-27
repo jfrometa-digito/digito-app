@@ -68,6 +68,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Welcome back! 👋 How can I assist you with your documents today?';
 
   @override
+  String chatResumeGreeting(String title) {
+    return 'Welcome back! I\'ve loaded your draft for $title.';
+  }
+
+  @override
   String chatRequestType(String type) {
     return 'I need to $type a new contract.';
   }
@@ -191,6 +196,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btnSendForSigning => 'Send for signing';
+
+  @override
+  String get btnEditFields => 'Edit Fields';
+
+  @override
+  String get btnAddFields => 'Add Fields';
 
   @override
   String get signingLinkTitle => 'READY TO SIGN';

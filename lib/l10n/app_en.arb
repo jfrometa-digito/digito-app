@@ -20,6 +20,14 @@
 
     "chatGreeting": "Hello! I can help you create a new signature request.",
     "chatWelcomeBack": "Welcome back! 👋 How can I assist you with your documents today?",
+    "chatResumeGreeting": "Welcome back! I've loaded your draft for {title}.",
+    "@chatResumeGreeting": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
     "chatRequestType": "I need to {type} a new contract.",
     "@chatRequestType": {
         "placeholders": {
@@ -82,6 +90,8 @@
     "summaryStatus": "Status",
     "summarySignUrl": "Sign URL",
     "btnSendForSigning": "Send for signing",
+    "btnEditFields": "Edit Fields",
+    "btnAddFields": "Add Fields",
 
     "signingLinkTitle": "READY TO SIGN",
     "signingLinkGenerated": "Signing Link Generated",
