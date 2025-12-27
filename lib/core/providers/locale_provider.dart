@@ -7,9 +7,9 @@ class AppLocale extends Notifier<Locale> {
 
   @override
   Locale build() {
-    // Load saved locale initially, default to English if not found
+    // Attempt to load saved locale, default to Spanish
     _loadLocale();
-    return const Locale('en');
+    return const Locale('es');
   }
 
   Future<void> _loadLocale() async {

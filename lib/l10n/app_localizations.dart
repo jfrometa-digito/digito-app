@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardTitle.
   ///
   /// In en, this message translates to:
-  /// **'SignBot Assistant'**
+  /// **'Set Up Request'**
   String get dashboardTitle;
 
   /// No description provided for @dashboardSubtitle.
@@ -206,6 +206,18 @@ abstract class AppLocalizations {
   /// **'Sequential signing for teams'**
   String get cardMultiPartySubtitle;
 
+  /// No description provided for @cardTemplatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a Template'**
+  String get cardTemplatesTitle;
+
+  /// No description provided for @cardTemplatesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a saved document layout'**
+  String get cardTemplatesSubtitle;
+
   /// No description provided for @promptInputPlaceholder.
   ///
   /// In en, this message translates to:
@@ -239,13 +251,13 @@ abstract class AppLocalizations {
   /// No description provided for @chatGreeting.
   ///
   /// In en, this message translates to:
-  /// **'Hello! I can help you create a new signature request.'**
+  /// **'Let\'s set up your signature request.'**
   String get chatGreeting;
 
   /// No description provided for @chatWelcomeBack.
   ///
   /// In en, this message translates to:
-  /// **'Welcome back! 👋 How can I assist you with your documents today?'**
+  /// **'Select a flow type to get started.'**
   String get chatWelcomeBack;
 
   /// No description provided for @chatResumeGreeting.
@@ -317,8 +329,26 @@ abstract class AppLocalizations {
   /// No description provided for @chatSendErrorLink.
   ///
   /// In en, this message translates to:
-  /// **'Your request has been sent, but I could not generate a link.'**
+  /// **'Something went wrong, and I couldn\'t generate the link. Please try again.'**
   String get chatSendErrorLink;
+
+  /// No description provided for @signNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Now'**
+  String get signNow;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard!'**
+  String get linkCopied;
+
+  /// No description provided for @emailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sent successfully!'**
+  String get emailSent;
 
   /// No description provided for @errorLaunchUrl.
   ///

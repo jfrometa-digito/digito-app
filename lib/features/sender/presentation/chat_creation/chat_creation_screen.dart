@@ -457,18 +457,6 @@ class _MessageBubble extends StatelessWidget {
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            CircleAvatar(
-              backgroundColor: theme.colorScheme.primaryContainer,
-              radius: 16,
-              child: Icon(
-                Icons.edit,
-                size: 16,
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
           Flexible(
             child: Container(
               padding: const EdgeInsets.all(16),

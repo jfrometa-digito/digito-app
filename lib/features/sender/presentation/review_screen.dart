@@ -51,7 +51,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 
     if (_isSent && _sentRequest != null) {
       return RequestDetailsView(
-        request: _sentRequest!,
+        requestId: _sentRequest!.id,
         actionLabel: 'Done',
         onAction: () {
           ref.read(activeDraftProvider.notifier).clear();

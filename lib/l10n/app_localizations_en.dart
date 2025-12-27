@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get dashboardTitle => 'SignBot Assistant';
+  String get dashboardTitle => 'Set Up Request';
 
   @override
   String get dashboardSubtitle => 'Your document signing companion';
@@ -63,6 +63,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardMultiPartySubtitle => 'Sequential signing for teams';
 
   @override
+  String get cardTemplatesTitle => 'Use a Template';
+
+  @override
+  String get cardTemplatesSubtitle => 'Start from a saved document layout';
+
+  @override
   String get promptInputPlaceholder => 'Ask me to draft a contract..';
 
   @override
@@ -78,12 +84,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuLanguage => 'Language';
 
   @override
-  String get chatGreeting =>
-      'Hello! I can help you create a new signature request.';
+  String get chatGreeting => 'Let\'s set up your signature request.';
 
   @override
-  String get chatWelcomeBack =>
-      'Welcome back! 👋 How can I assist you with your documents today?';
+  String get chatWelcomeBack => 'Select a flow type to get started.';
 
   @override
   String chatResumeGreeting(String title) {
@@ -132,7 +136,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSendErrorLink =>
-      'Your request has been sent, but I could not generate a link.';
+      'Something went wrong, and I couldn\'t generate the link. Please try again.';
+
+  @override
+  String get signNow => 'Sign Now';
+
+  @override
+  String get linkCopied => 'Link copied to clipboard!';
+
+  @override
+  String get emailSent => 'Email sent successfully!';
 
   @override
   String get errorLaunchUrl => 'Could not launch signing URL';

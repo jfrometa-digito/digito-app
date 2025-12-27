@@ -1,6 +1,6 @@
 {
     "@@locale": "en",
-    "dashboardTitle": "SignBot Assistant",
+    "dashboardTitle": "Set Up Request",
     "dashboardSubtitle": "Your document signing companion",
     "dashboardPoweredBy": "Powered by DocSecure",
     "onboardingTitle": "Let's Get Started!",
@@ -18,14 +18,16 @@
     "cardOneOnOneSubtitle": "Send to one other person",
     "cardMultiPartyTitle": "Multiparty Flow",
     "cardMultiPartySubtitle": "Sequential signing for teams",
+    "cardTemplatesTitle": "Use a Template",
+    "cardTemplatesSubtitle": "Start from a saved document layout",
     "promptInputPlaceholder": "Ask me to draft a contract..",
     "menuProfile": "Profile",
     "menuToggleTheme": "Toggle Theme",
     "menuLogOut": "Log Out",
     "menuLanguage": "Language",
 
-    "chatGreeting": "Hello! I can help you create a new signature request.",
-    "chatWelcomeBack": "Welcome back! 👋 How can I assist you with your documents today?",
+    "chatGreeting": "Let's set up your signature request.",
+    "chatWelcomeBack": "Select a flow type to get started.",
     "chatResumeGreeting": "Welcome back! I've loaded your draft for {title}.",
     "@chatResumeGreeting": {
         "placeholders": {
@@ -65,7 +67,10 @@
             }
         }
     },
-    "chatSendErrorLink": "Your request has been sent, but I could not generate a link.",
+    "chatSendErrorLink": "Something went wrong, and I couldn't generate the link. Please try again.",
+    "signNow": "Sign Now",
+    "linkCopied": "Link copied to clipboard!",
+    "emailSent": "Email sent successfully!",
     "errorLaunchUrl": "Could not launch signing URL",
 
     "uploadDocumentTitle": "UPLOAD DOCUMENT",

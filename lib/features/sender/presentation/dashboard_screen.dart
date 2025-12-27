@@ -628,65 +628,100 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
       showModalBottomSheet(
         context: context,
-        builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(AppLocalizations.of(context)!.menuProfile),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  if (isAuth) {
-                    context.pushNamed('profile');
-                  } else {
-                    context.pushNamed('login');
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.brightness_6),
-                title: Text(AppLocalizations.of(context)!.menuToggleTheme),
-                onTap: () {
-                  ref.read(appThemeModeProvider.notifier).toggle();
-                  Navigator.pop(ctx);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: Text(AppLocalizations.of(context)!.menuLanguage),
-                trailing: Text(
-                  ref.read(appLocaleProvider).languageCode.toUpperCase(),
-                ),
-                onTap: () {
-                  ref.read(appLocaleProvider.notifier).toggle();
-                  Navigator.pop(ctx);
-                },
-              ),
-              if (isAuth)
+        builder: (ctx) {
+          final theme = Theme.of(ctx);
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: Text(AppLocalizations.of(context)!.menuLogOut),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    final authService = ref.read(authServiceProvider);
-                    await authService.logout();
-                    ref.invalidate(currentUserProvider);
-                    ref.invalidate(isAuthenticatedProvider);
-                  },
-                )
-              else
-                ListTile(
-                  leading: const Icon(Icons.login),
-                  title: const Text('Log In'),
+                  leading: const Icon(Icons.person),
+                  title: Text(AppLocalizations.of(context)!.menuProfile),
                   onTap: () {
                     Navigator.pop(ctx);
-                    context.pushNamed('login');
+                    if (isAuth) {
+                      context.pushNamed('profile');
+                    } else {
+                      context.pushNamed('login');
+                    }
                   },
                 ),
-            ],
-          ),
-        ),
+                ListTile(
+                  leading: const Icon(Icons.brightness_6),
+                  title: Text(AppLocalizations.of(context)!.menuToggleTheme),
+                  onTap: () {
+                    ref.read(appThemeModeProvider.notifier).toggle();
+                    Navigator.pop(ctx);
+                  },
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.language, size: 20, color: Colors.grey),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context)!.menuLanguage,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Español'),
+                  trailing: ref.watch(appLocaleProvider).languageCode == 'es'
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () {
+                    ref
+                        .read(appLocaleProvider.notifier)
+                        .setLocale(const Locale('es'));
+                    Navigator.pop(ctx);
+                  },
+                ),
+                ListTile(
+                  title: const Text('English'),
+                  trailing: ref.watch(appLocaleProvider).languageCode == 'en'
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () {
+                    ref
+                        .read(appLocaleProvider.notifier)
+                        .setLocale(const Locale('en'));
+                    Navigator.pop(ctx);
+                  },
+                ),
+                if (isAuth)
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: Text(AppLocalizations.of(context)!.menuLogOut),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      final authService = ref.read(authServiceProvider);
+                      await authService.logout();
+                      ref.invalidate(currentUserProvider);
+                      ref.invalidate(isAuthenticatedProvider);
+                    },
+                  )
+                else
+                  ListTile(
+                    leading: const Icon(Icons.login),
+                    title: const Text('Log In'),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      context.pushNamed('login');
+                    },
+                  ),
+              ],
+            ),
+          );
+        },
       );
     } catch (e) {
       if (context.mounted) {

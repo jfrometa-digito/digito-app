@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get dashboardTitle => 'Asistente SignBot';
+  String get dashboardTitle => 'Configurar Solicitud';
 
   @override
   String get dashboardSubtitle => 'Tu compañero de firma digital';
@@ -63,6 +63,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cardMultiPartySubtitle => 'Firma secuencial para equipos';
 
   @override
+  String get cardTemplatesTitle => 'Usar Plantilla';
+
+  @override
+  String get cardTemplatesSubtitle => 'Empezar desde un diseño guardado';
+
+  @override
   String get promptInputPlaceholder => 'Pídeme que redacte un contrato..';
 
   @override
@@ -78,12 +84,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get menuLanguage => 'Idioma';
 
   @override
-  String get chatGreeting =>
-      '¡Hola! Puedo ayudarte a crear una nueva solicitud de firma.';
+  String get chatGreeting => 'Vamos a configurar tu solicitud de firma.';
 
   @override
-  String get chatWelcomeBack =>
-      '¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarte hoy con tus documentos?';
+  String get chatWelcomeBack => 'Selecciona el flujo para comenzar.';
 
   @override
   String chatResumeGreeting(String title) {
@@ -132,7 +136,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatSendErrorLink =>
-      'Tu solicitud ha sido enviada, pero no pude generar un enlace.';
+      'Algo salió mal y no pude generar el enlace. Por favor, inténtalo de nuevo.';
+
+  @override
+  String get signNow => 'Firmar Ahora';
+
+  @override
+  String get linkCopied => '¡Enlace copiado al portapapeles!';
+
+  @override
+  String get emailSent => '¡Correo enviado con éxito!';
 
   @override
   String get errorLaunchUrl => 'No se pudo abrir el enlace de firma';

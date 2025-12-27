@@ -11,7 +11,6 @@ import '../../features/signer/presentation/signing_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/sender/presentation/widgets/share_link_view.dart';
-import '../../features/sender/providers/requests_provider.dart';
 
 part 'app_router.g.dart';
 
@@ -78,10 +77,8 @@ GoRouter appRouter(Ref ref) {
             name: 'details',
             builder: (context, state) {
               final requestId = state.pathParameters['requestId']!;
-              final requests = ref.watch(requestsProvider).value ?? [];
-              final request = requests.firstWhere((r) => r.id == requestId);
               return RequestDetailsView(
-                request: request,
+                requestId: requestId,
                 onAction: () => context.go('/'),
                 actionLabel: 'Back to Dashboard',
               );

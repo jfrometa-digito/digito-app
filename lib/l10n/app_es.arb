@@ -1,6 +1,6 @@
 {
     "@@locale": "es",
-    "dashboardTitle": "Asistente SignBot",
+    "dashboardTitle": "Configurar Solicitud",
     "dashboardSubtitle": "Tu compañero de firma digital",
     "dashboardPoweredBy": "Potenciado por DocSecure",
     "onboardingTitle": "¡Empecemos!",
@@ -18,14 +18,16 @@
     "cardOneOnOneSubtitle": "Enviar a una persona",
     "cardMultiPartyTitle": "Flujo Multipartes",
     "cardMultiPartySubtitle": "Firma secuencial para equipos",
+    "cardTemplatesTitle": "Usar Plantilla",
+    "cardTemplatesSubtitle": "Empezar desde un diseño guardado",
     "promptInputPlaceholder": "Pídeme que redacte un contrato..",
     "menuProfile": "Perfil",
     "menuToggleTheme": "Cambiar Tema",
     "menuLogOut": "Cerrar Sesión",
     "menuLanguage": "Idioma",
 
-    "chatGreeting": "¡Hola! Puedo ayudarte a crear una nueva solicitud de firma.",
-    "chatWelcomeBack": "¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarte hoy con tus documentos?",
+    "chatGreeting": "Vamos a configurar tu solicitud de firma.",
+    "chatWelcomeBack": "Selecciona el flujo para comenzar.",
     "chatResumeGreeting": "¡Bienvenido de nuevo! He cargado el borrador para {title}.",
     "@chatResumeGreeting": {
         "placeholders": {
@@ -44,7 +46,10 @@
     "chatSummaryPrompt": "Perfecto. Aquí está el resumen de tu solicitud. Si todo se ve bien, puedes enviarla.",
     "chatSendRequest": "Enviar Solicitud",
     "chatLinkGenerated": "¡Gran trabajo! He generado el enlace de firma para '{title}'.",
-    "chatSendErrorLink": "Tu solicitud ha sido enviada, pero no pude generar un enlace.",
+    "chatSendErrorLink": "Algo salió mal y no pude generar el enlace. Por favor, inténtalo de nuevo.",
+    "signNow": "Firmar Ahora",
+    "linkCopied": "¡Enlace copiado al portapapeles!",
+    "emailSent": "¡Correo enviado con éxito!",
     "errorLaunchUrl": "No se pudo abrir el enlace de firma",
 
     "uploadDocumentTitle": "SUBIR DOCUMENTO",

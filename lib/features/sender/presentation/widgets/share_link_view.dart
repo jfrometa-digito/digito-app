@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/requests_provider.dart';
 import '../../../../domain/models/signature_request.dart';
 
-class RequestDetailsView extends StatelessWidget {
-  final SignatureRequest request;
+class RequestDetailsView extends ConsumerWidget {
+  final String requestId;
   final VoidCallback onAction;
   final String actionLabel;
 
   const RequestDetailsView({
     super.key,
-    required this.request,
+    required this.requestId,
     required this.onAction,
     this.actionLabel = 'Back to Dashboard',
   });
 
-  void _copyToClipboard(BuildContext context) {
-    if (request.signUrl != null) {
-      Clipboard.setData(ClipboardData(text: request.signUrl!));
+  void _copyToClipboard(BuildContext context, String? signUrl) {
+    if (signUrl != null) {
+      Clipboard.setData(ClipboardData(text: signUrl));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Link copied to clipboard!')),
       );
@@ -25,9 +26,21 @@ class RequestDetailsView extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final requests = ref.watch(requestsProvider).value ?? [];
+    final request = requests.firstWhere(
+      (r) => r.id == requestId,
+      orElse: () => SignatureRequest(
+        id: requestId,
+        title: 'Unknown',
+        createdAt: DateTime.now(),
+        status: RequestStatus.draft,
+      ),
+    );
+
     final url = request.signUrl ?? '';
 
     return Scaffold(
@@ -136,7 +149,7 @@ class RequestDetailsView extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.copy, size: 20),
                       onPressed: url.isNotEmpty
-                          ? () => _copyToClipboard(context)
+                          ? () => _copyToClipboard(context, url)
                           : null,
                       tooltip: 'Copy Link',
                     ),

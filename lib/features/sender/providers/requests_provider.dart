@@ -251,10 +251,24 @@ class ActiveDraft extends _$ActiveDraft {
   }) async {
     var current = state;
     if (current == null) {
+      ref
+          .read(loggerProvider)
+          .log('updateFile - No active draft found, initializing new one');
       await initializeNewDraft();
       current = state;
     }
-    if (current == null) return;
+
+    if (current == null) {
+      ref
+          .read(loggerProvider)
+          .error('updateFile - Failed to initialize a draft', 'No state', null);
+      return;
+    }
+
+    final requestId = current.id;
+    ref
+        .read(loggerProvider)
+        .log('updateFile - Processing file for request: $requestId');
 
     String finalPath = filePath;
 
@@ -263,14 +277,15 @@ class ActiveDraft extends _$ActiveDraft {
       try {
         final appDir = await getApplicationDocumentsDirectory();
         final fileNameOnly = filePath.split('/').last;
-        final persistentPath = '${appDir.path}/$fileNameOnly';
+        final persistentPath =
+            '${appDir.path}/$requestId-$fileNameOnly'; // Use ID to avoid collisions
         final file = File(filePath);
         if (await file.exists()) {
           await file.copy(persistentPath);
           finalPath = persistentPath;
           ref
               .read(loggerProvider)
-              .log('updateFile - Copied to persistent path: $finalPath');
+              .log('updateFile - Persisted file to: $finalPath');
         }
       } catch (e) {
         ref
@@ -280,9 +295,8 @@ class ActiveDraft extends _$ActiveDraft {
     }
 
     final transientFileNotifier = ref.read(
-      transientFileProvider(current.id).notifier,
+      transientFileProvider(requestId).notifier,
     );
-
     if (fileBytes != null) {
       transientFileNotifier.set(fileBytes);
     }
@@ -296,6 +310,9 @@ class ActiveDraft extends _$ActiveDraft {
 
     state = updated;
     await _persist(updated);
+    ref
+        .read(loggerProvider)
+        .log('updateFile - Draft updated and persisted successfully');
   }
 
   Future<void> updateRecipients(List<Recipient> recipients) async {
