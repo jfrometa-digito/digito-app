@@ -2,6 +2,7 @@ import 'package:digito_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 // --- Header ---
+// --- Header ---
 class DashboardHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onMenuTap;
   final VoidCallback onProfileTap;
@@ -18,109 +19,48 @@ class DashboardHeader extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: theme.colorScheme.surface,
       elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        icon: Icon(
-          Icons.account_circle,
-          color: theme.colorScheme.onSurface,
-          size: 28,
-        ),
-        onPressed: onProfileTap,
-        tooltip: 'Profile',
-      ),
-      title: Text(
-        AppLocalizations.of(context)!.dashboardTitle,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: theme.colorScheme.onSurface,
-        ),
+      titleSpacing: 20,
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.primary, // Brand Blue from theme
+            ),
+            child: Icon(
+              Icons.fingerprint,
+              color: theme.colorScheme.onPrimary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            "Digito",
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.more_horiz, color: theme.colorScheme.onSurface),
-          onPressed: onMenuTap,
+          icon: Icon(
+            Icons.account_circle,
+            color: theme.colorScheme.onSurface,
+            size: 28,
+          ),
+          onPressed: onProfileTap,
         ),
+        const SizedBox(width: 16),
       ],
     );
   }
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-// --- Hero Section ---
-class DashboardHero extends StatelessWidget {
-  const DashboardHero({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      children: [
-        const SizedBox(height: 24),
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: const Color(0xFF5B7CFA), // SignBot Blue
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF5B7CFA).withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.edit_note, // Or custom SVG
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          AppLocalizations.of(
-            context,
-          )!.dashboardTitle.split(' ')[0], // SignBot or localized name
-          style: theme.textTheme.headlineLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          AppLocalizations.of(context)!.dashboardSubtitle,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: theme.colorScheme.outlineVariant),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.verified, size: 16, color: theme.colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(
-                AppLocalizations.of(context)!.dashboardPoweredBy,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
 }
 
 // --- Segmented Tab Selector ---
@@ -138,18 +78,22 @@ class SegmentedTabSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      width: double.infinity,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: [
-          _buildTab(context, AppLocalizations.of(context)!.tabDrafting, 0),
-          _buildTab(context, AppLocalizations.of(context)!.tabSigning, 1),
-          _buildTab(context, AppLocalizations.of(context)!.tabArchiving, 2),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Row(
+            children: [
+              _buildTab(context, AppLocalizations.of(context)!.tabDrafting, 0),
+              _buildTab(context, AppLocalizations.of(context)!.tabSigning, 1),
+              _buildTab(context, AppLocalizations.of(context)!.tabArchiving, 2),
+            ],
+          );
+        },
       ),
     );
   }
@@ -165,18 +109,25 @@ class SegmentedTabSelector extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF4285F4)
-                : Colors.transparent, // Active blue matches design
+            color: isSelected ? theme.colorScheme.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
             child: Text(
               label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected
-                    ? Colors.white
+                    ? theme.colorScheme.onSurface
                     : theme.colorScheme.onSurfaceVariant,
               ),
             ),
@@ -187,7 +138,7 @@ class SegmentedTabSelector extends StatelessWidget {
   }
 }
 
-// --- Option Card ---
+// --- Option Card (Hero & Grid) ---
 class DashboardOptionCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -195,68 +146,118 @@ class DashboardOptionCard extends StatelessWidget {
   final Color iconBgColor;
   final Color iconColor;
   final VoidCallback onTap;
+  final bool isHero; // If true, renders the large top card
 
   const DashboardOptionCard({
     super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.iconBgColor,
-    required this.iconColor,
+    this.iconBgColor = const Color(0xFFE8F0FE), // Default fallback
+    this.iconColor = const Color(0xFF1967D2), // Default fallback
     required this.onTap,
+    this.isHero = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    if (isHero) {
+      return Card(
+        elevation: 0,
+        color: theme.colorScheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: iconBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(icon, color: iconColor, size: 24),
+                    ),
+                    // Decorative elements from design
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_forward,
+                          color: theme.colorScheme.outlineVariant,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Grid Style Card
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      color: theme.colorScheme.surface,
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor),
+                child: Icon(icon, color: iconColor, size: 20),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+              const Spacer(),
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ),
@@ -265,86 +266,126 @@ class DashboardOptionCard extends StatelessWidget {
   }
 }
 
-// --- Prompt Input Bar ---
-class PromptInputBar extends StatelessWidget {
+// --- Quick Access Row ---
+class QuickAccessRow extends StatelessWidget {
+  final int pendingCount;
+  final VoidCallback onPendingTap;
+  final VoidCallback onUploadTap;
+
+  const QuickAccessRow({
+    super.key,
+    required this.pendingCount,
+    required this.onPendingTap,
+    required this.onUploadTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickActionChip(
+            icon: Icons.pending_actions,
+            label: 'Pending ($pendingCount)',
+            color: Colors.orange, // Keep distinct semantic colors
+            onTap: onPendingTap,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _QuickActionChip(
+            icon: Icons.cloud_upload_outlined,
+            label: 'Upload File',
+            color: Colors.blue, // Keep distinct semantic colors
+            onTap: onUploadTap,
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Placeholder for alignment or extra action
+        const Expanded(child: SizedBox()),
+      ],
+    );
+  }
+}
+
+class _QuickActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
   final VoidCallback onTap;
 
-  const PromptInputBar({super.key, required this.onTap});
+  const _QuickActionChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        32,
-      ), // Bottom padding for safety
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF5B7CFA), // Blue plus button
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.add, color: Colors.white),
-              onPressed: onTap,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
+    return Material(
+      color: theme.colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: theme.colorScheme.onSurface,
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        AppLocalizations.of(context)!.promptInputPlaceholder,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.camera_alt_outlined,
-                      color: theme.colorScheme.onSurfaceVariant,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.mic_none,
-                      color: theme.colorScheme.onSurfaceVariant,
-                      size: 20,
-                    ),
-                  ],
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Start Document Button ---
+class StartDocumentButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const StartDocumentButton({super.key, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: FilledButton.icon(
+          onPressed: onTap,
+          icon: const Icon(Icons.add),
+          label: const Text(
+            "Start New Document",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          style: FilledButton.styleFrom(
+            backgroundColor: theme.colorScheme.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 4,
+            shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+          ),
+        ),
       ),
     );
   }

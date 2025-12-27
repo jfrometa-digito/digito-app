@@ -34,12 +34,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              const SliverToBoxAdapter(child: DashboardHero()),
               SliverToBoxAdapter(
-                child: SegmentedTabSelector(
-                  selectedIndex: _selectedIndex,
-                  onTabChanged: (index) =>
-                      setState(() => _selectedIndex = index),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  child: Text(
+                    "Signing Mode",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  child: Text(
+                    "Select a workflow to begin",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SegmentedTabSelector(
+                    selectedIndex: _selectedIndex,
+                    onTabChanged: (index) =>
+                        setState(() => _selectedIndex = index),
+                  ),
                 ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -47,15 +74,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: _buildCurrentView(),
               ),
-              // Space for bottom input bar
-              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: PromptInputBar(
+            child: StartDocumentButton(
               onTap: () {
                 ref.read(activeDraftProvider.notifier).clear();
                 context.pushNamed('create_chat');
@@ -85,44 +112,78 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final l10n = AppLocalizations.of(context)!;
     return SliverList(
       delegate: SliverChildListDelegate([
-        Text(
-          l10n.dashboardSubtitle,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
         DashboardOptionCard(
           title: l10n.cardSelfSignTitle,
           subtitle: l10n.cardSelfSignSubtitle,
           icon: Icons.edit_note,
-          iconBgColor: const Color(0xFFE8F0FE), // Light blue
-          iconColor: const Color(0xFF1967D2), // Google Blue
+          iconBgColor: theme.colorScheme.primaryContainer,
+          iconColor: theme.colorScheme.onPrimaryContainer,
+          isHero: true,
           onTap: () async {
             await ref.read(activeDraftProvider.notifier).initSignMyself();
             if (mounted) context.pushNamed('create_chat');
           },
         ),
-        DashboardOptionCard(
-          title: l10n.cardOneOnOneTitle,
-          subtitle: l10n.cardOneOnOneSubtitle,
-          icon: Icons.people_outline,
-          iconBgColor: const Color(0xFFF3E8FD), // Light purple
-          iconColor: const Color(0xFF9334E6), // Purple
-          onTap: () async {
-            await ref.read(activeDraftProvider.notifier).initOneOnOne();
-            if (mounted) context.pushNamed('create_chat');
-          },
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 170, // Fixed height for alignment
+                child: DashboardOptionCard(
+                  title: l10n.cardOneOnOneTitle,
+                  subtitle: l10n.cardOneOnOneSubtitle,
+                  icon: Icons.people_outline,
+                  iconBgColor: theme.colorScheme.secondaryContainer,
+                  iconColor: theme.colorScheme.onSecondaryContainer,
+                  onTap: () async {
+                    await ref.read(activeDraftProvider.notifier).initOneOnOne();
+                    if (mounted) context.pushNamed('create_chat');
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: SizedBox(
+                height: 170, // Fixed height for alignment
+                child: DashboardOptionCard(
+                  title: l10n.cardMultiPartyTitle,
+                  // Truncate subtitle visually if needed in new design but keeping localized string
+                  subtitle: l10n.cardMultiPartySubtitle,
+                  icon: Icons.groups_outlined,
+                  iconBgColor: const Color(0xFFE6F4EA), // Light green
+                  iconColor: const Color(0xFF137333), // Green
+                  onTap: () async {
+                    await ref
+                        .read(activeDraftProvider.notifier)
+                        .initMultiParty();
+                    if (mounted) context.pushNamed('create_chat');
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-        DashboardOptionCard(
-          title: l10n.cardMultiPartyTitle,
-          subtitle: l10n.cardMultiPartySubtitle,
-          icon: Icons.groups_outlined,
-          iconBgColor: const Color(0xFFE6F4EA), // Light green
-          iconColor: const Color(0xFF137333), // Green
-          onTap: () async {
-            await ref.read(activeDraftProvider.notifier).initMultiParty();
+        const SizedBox(height: 32),
+        Text(
+          "QUICK ACCESS",
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 16),
+        QuickAccessRow(
+          pendingCount: 3, // Placeholder
+          onPendingTap: () =>
+              setState(() => _selectedIndex = 1), // Go to Signing
+          onUploadTap: () async {
+            // Go to self-sign as a shortcut
+            await ref.read(activeDraftProvider.notifier).initSignMyself();
             if (mounted) context.pushNamed('create_chat');
           },
         ),
